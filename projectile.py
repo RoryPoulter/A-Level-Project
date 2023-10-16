@@ -1,5 +1,5 @@
 # Created: 04/10/23
-# Last edited: 04/10/23
+# Last edited: 16/10/23
 
 import numpy as np                  # Used for vector calculations
 from math import sin, cos           # Used for trig calculations
@@ -8,7 +8,7 @@ from math import radians as rad     # Convert degrees to radians
 
 # Calculates the magnitude of a vector
 def mag(vector):
-    total = sum(list(map(lambda x: x**2, vector)))
+    total = sum(list(map(lambda x: x**2, vector)))  # Squares all the numbers and adds them together
     return total**0.5
 
 
@@ -18,12 +18,12 @@ class Projectile:
         self.u = u * np.array([cos(rad(ele_angle))*cos(rad(azi_angle)),
                                sin(rad(ele_angle)),
                                cos(rad(ele_angle))*sin(rad(azi_angle))])
-        self.pos0 = np.array([x, y, z])
+        self.pos0 = np.array([x, y, z])  # Initial position
         self.pos = self.pos0
-        self.g = np.array([0, -g, 0])
+        self.g = np.array([0, -g, 0])  # Gravity vector
 
-        self.max_h = 0
-        self.max_t = 0
+        self.max_h = 0  # Maximum height reached by projectile
+        self.max_t = 0  # Time when max height reached
 
         self.time = 0
         self.landing_time = 0
@@ -31,7 +31,7 @@ class Projectile:
         self.v = self.u
 
     def calcDisplacement(self):
-        return mag(self.pos-self.pos0)
+        return self.pos-self.pos0
 
 
 class ProjectileNoDrag(Projectile):
@@ -80,4 +80,13 @@ class ProjectileDrag(Projectile):
 
 
 if __name__ == "__main__":
-    projectile = ProjectileNoDrag(20, 50, 45, 0, 0, 0, 9.81)
+    dt = 0.01
+    projectile = ProjectileNoDrag(20, 60, 0, 0, 10, 0, 10)
+    while projectile.pos[1] >= 0:
+        projectile.move(dt)
+    print(f"""Final position {projectile.landing_pos}
+Landing time: {projectile.landing_time}s
+Final velocity: {projectile.calcVelocity()}m/s
+Displacement: {mag(projectile.calcDisplacement())}m
+Max height: {projectile.max_h}m
+Time: {projectile.max_t}s""")
