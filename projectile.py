@@ -1,5 +1,5 @@
 # Created: 04/10/23
-# Last edited: 16/10/23
+# Last edited: 18/10/23 - fixed issue with displacement of ProjectileDrag objects
 
 import numpy as np                  # Used for vector calculations
 from math import sin, cos           # Used for trig calculations
@@ -7,7 +7,7 @@ from math import radians as rad     # Convert degrees to radians
 
 
 # Calculates the magnitude of a vector
-def mag(vector):
+def mag(vector) -> float:
     total = sum(list(map(lambda x: x**2, vector)))  # Squares all the numbers and adds them together
     return total**0.5
 
@@ -19,7 +19,7 @@ class Projectile:
                                sin(rad(ele_angle)),
                                cos(rad(ele_angle))*sin(rad(azi_angle))])
         self.pos0 = np.array([x, y, z])  # Initial position
-        self.pos = self.pos0
+        self.pos = np.array([x, y, z])
         self.g = np.array([0, -g, 0])  # Gravity vector
 
         self.max_h = 0  # Maximum height reached by projectile
@@ -30,8 +30,9 @@ class Projectile:
 
         self.v = self.u
 
-    def calcDisplacement(self):
-        return self.pos-self.pos0
+    def calcDisplacement(self) -> float:
+        s = self.pos-self.pos0
+        return mag(s)
 
 
 class ProjectileNoDrag(Projectile):
@@ -84,9 +85,21 @@ if __name__ == "__main__":
     projectile = ProjectileNoDrag(20, 60, 0, 0, 10, 0, 10)
     while projectile.pos[1] >= 0:
         projectile.move(dt)
+    projectile.calcVelocity()
     print(f"""Final position {projectile.landing_pos}
 Landing time: {projectile.landing_time}s
-Final velocity: {projectile.calcVelocity()}m/s
-Displacement: {mag(projectile.calcDisplacement())}m
+Final velocity: {projectile.v}m/s
+Displacement: {projectile.calcDisplacement()}m
+Max height: {projectile.max_h}m
+Time: {projectile.max_t}s\n""")
+
+    projectile = ProjectileDrag(20, 60, 0, 0.0, 10.0, 0.0, 10.0, 10, 1.2,
+                                0.47, 4.5)
+    while projectile.pos[1] >= 0:
+        projectile.move(dt)
+    print(f"""Final position {projectile.pos}
+Landing time: {projectile.time}s
+Final velocity: {projectile.v}m/s
+Displacement: {projectile.calcDisplacement()}m
 Max height: {projectile.max_h}m
 Time: {projectile.max_t}s""")
