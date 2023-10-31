@@ -2,6 +2,7 @@
 # Last edited: 22/10/23 - changed z as up
 
 import numpy as np  # Used for vector calculations
+import matplotlib.pyplot as plt
 from math import sin, cos  # Used for trig calculations
 from math import radians as rad  # Convert degrees to radians
 
@@ -15,7 +16,7 @@ def mag(vector) -> float:
 # Classes for projectiles
 class Projectile:
     def __init__(self, velocity: int | float, ele_angle: int | float, azi_angle: int | float, x: int | float,
-                 y: int | float, z: int | float, gravity: int | float):
+                 y: int | float, z: int | float, gravity: int | float, **kwargs):
         self.u = velocity * np.array([cos(rad(ele_angle)) * cos(rad(azi_angle)),
                                       cos(rad(ele_angle)) * sin(rad(azi_angle)),
                                       sin(rad(ele_angle))])
@@ -31,15 +32,36 @@ class Projectile:
 
         self.v = self.u  # Current velocity
 
+        self.colour = kwargs.get("colour", "#FF0000")
+        self.coords = [self.pos0]
+
     def calcDisplacement(self) -> float:
         s = self.pos - self.pos0
         return mag(s)
 
+    def displayPath(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        n = (len(self.coords) // 20) + 1
+        print(self.coords[::n])
+
+        ax.scatter([row[0] for row in self.coords][::n],
+                   [row[1] for row in self.coords][::n],
+                   [row[2] for row in self.coords][::n],
+                   c=self.colour, marker='o')
+
+        ax.set_xlabel('X Axis / m')
+        ax.set_ylabel('Y Axis / m')
+        ax.set_zlabel('Z Axis / m')
+
+        plt.show()
+
 
 class ProjectileNoDrag(Projectile):
     def __init__(self, velocity: int | float, ele_angle: int | float, azi_angle: int | float, x: int | float,
-                 y: int | float, z: int | float, gravity: int | float):
-        super().__init__(velocity, ele_angle, azi_angle, x, y, z, gravity)
+                 y: int | float, z: int | float, gravity: int | float, **kwargs):
+        super().__init__(velocity, ele_angle, azi_angle, x, y, z, gravity, **kwargs)
 
         self.max_t = -self.u[2] / self.g[2]
         self.max_h = self.position(self.max_t)[2]
@@ -52,6 +74,7 @@ class ProjectileNoDrag(Projectile):
     def move(self, dt: float):
         self.pos = self.position(self.time)
         self.time += dt
+        self.coords.append([*self.pos])
 
     # Calculates the velocity of the projectile at a given time
     def calcVelocity(self):
@@ -61,8 +84,8 @@ class ProjectileNoDrag(Projectile):
 class ProjectileDrag(Projectile):
     def __init__(self, velocity: int | float, ele_angle: int | float, azi_angle: int | float, x: int | float,
                  y: int | float, z: int | float, gravity: int | float, mass: int | float, rho: int | float,
-                 cd: int | float, area: int | float):
-        super().__init__(velocity, ele_angle, azi_angle, x, y, z, gravity)
+                 cd: int | float, area: int | float, **kwargs):
+        super().__init__(velocity, ele_angle, azi_angle, x, y, z, gravity, **kwargs)
         self.m = mass  # Mass
         self.rho = rho  # Air density
         self.cd = cd  # Drag coefficient
@@ -81,6 +104,7 @@ class ProjectileDrag(Projectile):
         self.p += F_net * dt
         self.pos += self.p * dt / self.m
         self.time += dt
+        self.coords.append([*self.pos])
 
 
 if __name__ == "__main__":
