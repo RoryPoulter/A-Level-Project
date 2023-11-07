@@ -1,10 +1,10 @@
 # Created: 04/10/23
-# Last edited: 22/10/23 - changed z as up
+# Last edited: 31/10/23 - added matplotlib 3D scatter for graphics
 
-import numpy as np  # Used for vector calculations
-import matplotlib.pyplot as plt
-from math import sin, cos  # Used for trig calculations
-from math import radians as rad  # Convert degrees to radians
+import numpy as np                  # Used for vector calculations
+import matplotlib.pyplot as plt     # Used for GUI
+from math import sin, cos           # Used for trig calculations
+from math import radians as rad     # Convert degrees to radians
 
 
 # Calculates the magnitude of a vector
@@ -33,7 +33,8 @@ class Projectile:
         self.v = self.u  # Current velocity
 
         self.colour = kwargs.get("colour", "#FF0000")
-        self.coords = [self.pos0]
+        self.marker = kwargs.get("marker", "o")
+        self.coords = [[x, y, z]]  # List storing all coordinates visited
 
     def calcDisplacement(self) -> float:
         s = self.pos - self.pos0
@@ -44,12 +45,11 @@ class Projectile:
         ax = fig.add_subplot(111, projection='3d')
 
         n = (len(self.coords) // 20) + 1
-        print(self.coords[::n])
 
         ax.scatter([row[0] for row in self.coords][::n],
                    [row[1] for row in self.coords][::n],
                    [row[2] for row in self.coords][::n],
-                   c=self.colour, marker='o')
+                   c=self.colour, marker=self.marker)
 
         ax.set_xlabel('X Axis / m')
         ax.set_ylabel('Y Axis / m')
@@ -108,25 +108,12 @@ class ProjectileDrag(Projectile):
 
 
 if __name__ == "__main__":
-    dt = 0.01
-    projectile = ProjectileNoDrag(20, 60, 0, 0, 10, 0, 10)
-    while projectile.pos[2] >= 0:
-        projectile.move(dt)
-    projectile.calcVelocity()
-    print(f"""Final position {projectile.landing_pos}
-Landing time: {projectile.landing_time}s
-Final velocity: {projectile.v}m/s
-Displacement: {projectile.calcDisplacement()}m
-Max height: {projectile.max_h}m
-Time: {projectile.max_t}s\n""")
+    proj_1 = ProjectileDrag(250, 30, 60, 0.0, 0.0, 50.0, 9.81, 20.0, 1.2, 0.07, 1)
+    proj_2 = ProjectileNoDrag(250, 30, 60, 0.0, 0.0, 50.0, 9.81, colour="blue", marker="^")
 
-    projectile = ProjectileDrag(20, 60, 0, 0.0, 10.0, 0.0, 10.0, 10,
-                                1.2, 0.47, 4.5)
-    while projectile.pos[2] >= 0:
-        projectile.move(dt)
-    print(f"""Final position {projectile.pos}
-Landing time: {projectile.time}s
-Final velocity: {projectile.v}m/s
-Displacement: {projectile.calcDisplacement()}m
-Max height: {projectile.max_h}m
-Time: {projectile.max_t}s""")
+    dt: float = 0.01
+
+    for proj in (proj_1, proj_2):
+        while proj.pos[2] >= 0:
+            proj.move(dt)
+        proj.displayPath()
