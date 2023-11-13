@@ -1,4 +1,6 @@
 ﻿# A-Level-Project
-A 3D projectile simulator which includes the effect of drag on projectiles in motion.
+3D projectile simulator which includes the effect of drag on projectiles in motion.
 
-Currently in design stage before development.
+Allow users to save variables to external database file to load presets later.
+
+Currently in development.
