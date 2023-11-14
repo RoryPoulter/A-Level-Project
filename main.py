@@ -1,14 +1,102 @@
 # The main body of code
 # Created: 04/10/23
-# Last edited: 07/10/23
+# Last edited: 10/11/23
 
 import projectile  # Projectile calculations
 from tkinter import *  # GUI
+from tkinter import messagebox
 import sqlite3  # Database
+
+
+def verifyInputs(u: float, ele_angle: float, azi_angle: float, x: float, y: float, z: float, g: float, drag=False,
+                 m: float = None, rho: float = None, cd: float = None, area: float = None) -> bool:
+    message = "Invalid input: "
+    # Checks if the data fall within the correct ranges
+    error = "must fall within the range: "
+    if u <= 0:
+        messagebox.showerror("Error", message + "velocity " + error + "0 < u")
+        return False
+    if ele_angle < 0:
+        messagebox.showerror("Error", message + "elevation angle " + error + "0 ≤ θe")
+        return False
+    if azi_angle < 0 or azi_angle >= 360:
+        messagebox.showerror("Error", message + "azimuth angle " + error + "0 ≤ θa < 360")
+        return False
+    if x < 0:
+        messagebox.showerror("Error", message + "x " + error + "0 ≤ x")
+        return False
+    if y < 0:
+        messagebox.showerror("Error", message + "y " + error + "0 ≤ y")
+        return False
+    if z < 0:
+        messagebox.showerror("Error", message + "z " + error + "0 ≤ z")
+        return False
+    if g <= 0:
+        messagebox.showerror("Error", message + "g " + error + "0 < g")
+        return False
+
+    if drag:
+        if m <= 0:
+            messagebox.showerror("Error", message + "mass " + error + "0 < m")
+            return False
+        if rho <= 0:
+            messagebox.showerror("Error", message + "air density " + error + "0 < ρ")
+            return False
+        if cd <= 0 or cd > 1:
+            messagebox.showerror("Error", message + "drag coefficient " + error + "0 < cd ≤ 1")
+            return False
+        if area <= 0:
+            messagebox.showerror("Error", message + "surface area " + error + "0 < A")
+            return False
+
+    return True
 
 
 def run():
     global drag
+
+    values = [
+        initial_velocity.get(),
+        elevation_angle.get(),
+        azimuth_angle.get(),
+        x0.get(),
+        y0.get(),
+        z0.get(),
+        gravity.get()
+    ]
+    if drag:
+        values += [
+            mass.get(),
+            air_density.get(),
+            drag_coefficient.get(),
+            surface_area.get()
+        ]
+
+    if "" in values:
+        messagebox.showerror("Error", "Empty fields")
+        return
+    try:
+        values = list(map(lambda x: float(x), values))
+    except ValueError:
+        messagebox.showerror("Error", "Inputs must be numbers")
+        return
+
+    if drag:
+        valid = verifyInputs(*values[0:6], drag, *values[6:])
+    else:
+        valid = verifyInputs(*values)
+
+    if not valid:
+        return
+
+    if drag:
+        proj = projectile.ProjectileDrag(*values)
+    else:
+        proj = projectile.ProjectileNoDrag(*values)
+    dt = 0.01
+    while proj.pos[2] >=0:
+        proj.move(dt)
+    proj.displayPath()
 
 
 def loadToolsFrame():
@@ -24,8 +112,8 @@ def loadToolsFrame():
 
 
 def loadMenuFrame():
+    closeCurrentFrame()
     current_frame.set("menu")
-    menu_frame = Frame(root, bg=colours["bg"])
     menu_frame.place(x=0, y=26, width=1000, height=574)
     Button(menu_frame, bg=colours["but_bg"], fg=colours["text"], text="Info", command=loadInfoFrame, width=10,
            height=2, borderwidth=0).place(relx=0.2, rely=0.6)
@@ -34,8 +122,8 @@ def loadMenuFrame():
 
 
 def loadInfoFrame():
+    closeCurrentFrame()
     current_frame.set("info")
-    info_frame = Frame(root, bg=colours["bg"])
     info_frame.place(x=0, y=26, width=1000, height=574)
     Label(info_frame, bg=colours["bg"], fg=colours["text"], text="This is a test", font=("Calibri", 16)).place(x=260,
                                                                                                                y=150)
@@ -56,8 +144,8 @@ def loadSimFrame():
 
         drag = not drag
 
+    closeCurrentFrame()
     current_frame.set("sim")
-    sim_frame = Frame(root, bg=colours["bg"])
     sim_frame.place(x=0, y=26, width=1000, height=574)
 
     Label(sim_frame, bg=colours["bg"], fg=colours["text"], text="Velocity [m/s]:", font=("Calibri", 16),
@@ -75,19 +163,26 @@ def loadSimFrame():
     Label(sim_frame, bg=colours["bg"], fg=colours["text"], text="Gravity [m/s²]:", font=("Calibri", 16),
           width=16, anchor="e").place(x=50, y=400)
 
-    u_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+    u_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                    textvariable=initial_velocity)
     u_entry.place(x=240, y=100)
-    ele_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+    ele_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                      textvariable=elevation_angle)
     ele_entry.place(x=240, y=150)
-    azi_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+    azi_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                      textvariable=azimuth_angle)
     azi_entry.place(x=240, y=200)
-    x_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+    x_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                    textvariable=x0)
     x_entry.place(x=240, y=250)
-    y_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+    y_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                    textvariable=y0)
     y_entry.place(x=240, y=300)
-    z_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+    z_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                    textvariable=z0)
     z_entry.place(x=240, y=350)
-    g_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+    g_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                    textvariable=gravity)
     g_entry.place(x=240, y=400)
 
     Label(sim_frame, bg=colours["bg"], fg=colours["text"], text="Mass [kg]:", font=("Calibri", 16),
@@ -100,21 +195,25 @@ def loadSimFrame():
           width=16, anchor="e").place(x=450, y=250)
 
     if drag:
-        m_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
-        rho_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
-        cd_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
-        a_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10)
+        m_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                        textvariable=mass)
+        rho_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                          textvariable=air_density)
+        cd_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                         textvariable=drag_coefficient)
+        a_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
+                        textvariable=surface_area)
         drag_button = Button(sim_frame, bg=colours["pos"], fg="#ffffff", text="Drag", command=toggle, width=15,
                              font=("Calibri", 16), borderwidth=0)
     else:
         m_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
-                        state="disabled")
+                        state="disabled", textvariable=mass)
         rho_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
-                          state="disabled")
+                          state="disabled", textvariable=air_density)
         cd_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
-                         state="disabled")
+                         state="disabled", textvariable=drag_coefficient)
         a_entry = Entry(sim_frame, bg=colours["but_bg"], fg=colours["text"], font=("Calibri", 16), width=10,
-                        state="disabled")
+                        state="disabled", textvariable=surface_area)
         drag_button = Button(sim_frame, bg=colours["neg"], fg="#ffffff", text="No Drag", command=toggle, width=15,
                              font=("Calibri", 16), borderwidth=0)
 
@@ -132,13 +231,13 @@ def openSettingsWindow():
     global settings_win
     settings_win = Toplevel(root)
     settings_win.title("Settings")
-    settings_win.geometry("400x400")
+    settings_win.geometry("400x250")
     loadSettingsFrame(settings_win)
 
 
 def loadSettingsFrame(win):
     settings_frame = Frame(win, bg=colours["bg"])
-    settings_frame.place(x=0, y=0, width=400, height=400)
+    settings_frame.place(x=0, y=0, width=400, height=250)
 
     Radiobutton(settings_frame, text="Dark Mode", variable=dark, value=True, bg=colours["bg"],
                 activebackground=colours["bg"], activeforeground=colours["text"],
@@ -152,8 +251,8 @@ def loadSettingsFrame(win):
                 bg=colours["bg"], activebackground=colours["bg"],
                 activeforeground=colours["text"], font=("Calibri", 16)).place(x=50, y=150)
 
-    Button(settings_frame, bg=colours["but_bg"], fg=colours["text"], text="Confirm", command=updateScheme).place(x=50,
-                                                                                                                 y=350)
+    Button(settings_frame, bg=colours["but_bg"], fg=colours["text"], text="Confirm", command=updateScheme,
+           borderwidth=0).pack(anchor="s", side=RIGHT)
 
 
 def updateScheme():
@@ -187,7 +286,15 @@ def loadFrames():
     frames[current_frame.get()]()
 
 
-drag = False
+def closeCurrentFrame():
+    close = {
+        "menu": menu_frame.place_forget,
+        "info": info_frame.place_forget,
+        "sim": sim_frame.place_forget
+    }
+    close[current_frame.get()]()
+
+
 colours = {
     "bg": "#2E3142",
     "text": "#FFFFFF",
@@ -201,9 +308,26 @@ root.title("Main window")  # Sets the window title
 root.geometry("1000x600")  # Sets the window dimensions
 root.resizable(False, False)  # Prevents user from adjusting window size
 
+menu_frame = Frame(root, bg=colours["bg"])
+info_frame = Frame(root, bg=colours["bg"])
+sim_frame = Frame(root, bg=colours["bg"])
+
 current_frame = StringVar(value="menu")  # Variable to store the current open frame
 dark = BooleanVar(value=True)  # Boolean value for if the theme is dark
 colourblind_mode = BooleanVar(value=False)  # Boolean value for if colourblind mode is active
+
+drag = False
+initial_velocity = StringVar()
+elevation_angle = StringVar()
+azimuth_angle = StringVar()
+x0 = StringVar()
+y0 = StringVar()
+z0 = StringVar()
+gravity = StringVar()
+mass = StringVar()
+air_density = StringVar()
+drag_coefficient = StringVar()
+surface_area = StringVar()
 
 loadToolsFrame()
 loadMenuFrame()
