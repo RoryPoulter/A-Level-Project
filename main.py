@@ -6,6 +6,7 @@ import projectile  # Projectile calculations
 from tkinter import *  # GUI
 from tkinter import messagebox
 import sqlite3  # Database
+import json
 
 
 def verifyInputs(u: float, ele_angle: float, azi_angle: float, x: float, y: float, z: float, g: float, drag=False,
@@ -53,8 +54,7 @@ def verifyInputs(u: float, ele_angle: float, azi_angle: float, x: float, y: floa
 
 
 def run():
-    global drag
-
+    # Stores all inputs as a list
     values = [
         initial_velocity.get(),
         elevation_angle.get(),
@@ -72,15 +72,18 @@ def run():
             surface_area.get()
         ]
 
+    # Checks for any empty fields
     if "" in values:
         messagebox.showerror("Error", "Empty fields")
         return
+    # Checks for invalid inputs
     try:
         values = list(map(lambda x: float(x), values))
     except ValueError:
         messagebox.showerror("Error", "Inputs must be numbers")
         return
 
+    # Passes the values into the function verifyInputs to check validity
     if drag:
         valid = verifyInputs(*values[0:6], drag, *values[6:])
     else:
@@ -89,13 +92,16 @@ def run():
     if not valid:
         return
 
+    # Creates the objects using the values
     if drag:
-        proj = projectile.ProjectileDrag(*values)
+        proj = projectile.ProjectileDrag(*values, colour=colours["pos"])
     else:
-        proj = projectile.ProjectileNoDrag(*values)
+        proj = projectile.ProjectileNoDrag(*values, colour=colours["neg"])
     dt = 0.01
-    while proj.pos[2] >=0:
+    # Updates the position until it is on the ground
+    while proj.pos[2] >= 0:
         proj.move(dt)
+    # Loads the 3D scatter graph
     proj.displayPath()
 
 
@@ -114,6 +120,7 @@ def loadToolsFrame():
 def loadMenuFrame():
     closeCurrentFrame()
     current_frame.set("menu")
+    menu_frame.config(bg=colours["bg"])
     menu_frame.place(x=0, y=26, width=1000, height=574)
     Button(menu_frame, bg=colours["but_bg"], fg=colours["text"], text="Info", command=loadInfoFrame, width=10,
            height=2, borderwidth=0).place(relx=0.2, rely=0.6)
@@ -124,6 +131,7 @@ def loadMenuFrame():
 def loadInfoFrame():
     closeCurrentFrame()
     current_frame.set("info")
+    info_frame.config(bg=colours["bg"])
     info_frame.place(x=0, y=26, width=1000, height=574)
     Label(info_frame, bg=colours["bg"], fg=colours["text"], text="This is a test", font=("Calibri", 16)).place(x=260,
                                                                                                                y=150)
@@ -146,6 +154,7 @@ def loadSimFrame():
 
     closeCurrentFrame()
     current_frame.set("sim")
+    sim_frame.config(bg=colours["bg"])
     sim_frame.place(x=0, y=26, width=1000, height=574)
 
     Label(sim_frame, bg=colours["bg"], fg=colours["text"], text="Velocity [m/s]:", font=("Calibri", 16),
@@ -239,13 +248,10 @@ def loadSettingsFrame(win):
     settings_frame = Frame(win, bg=colours["bg"])
     settings_frame.place(x=0, y=0, width=400, height=250)
 
-    Radiobutton(settings_frame, text="Dark Mode", variable=dark, value=True, bg=colours["bg"],
-                activebackground=colours["bg"], activeforeground=colours["text"],
-                font=("Calibri", 16)).place(x=50, y=50)
-
-    Radiobutton(settings_frame, text="Light Mode", variable=dark, value=False, bg=colours["bg"],
-                activebackground=colours["bg"], activeforeground=colours["text"],
-                font=("Calibri", 16)).place(x=50, y=100)
+    menu = OptionMenu(settings_frame, current_theme, *themes)
+    menu.config(bg=colours["but_bg"], fg=colours["text"], borderwidth=0, highlightbackground=colours["bg"],
+                font=("Calibri", 12), width=10, activeforeground=colours["text"], activebackground=colours["but_bg"])
+    menu.place(x=50, y=50)
 
     Checkbutton(settings_frame, text="Colourblind Mode", variable=colourblind_mode,
                 bg=colours["bg"], activebackground=colours["bg"],
@@ -256,21 +262,12 @@ def loadSettingsFrame(win):
 
 
 def updateScheme():
-    if dark.get():
-        colours["bg"] = "#2E3142"
-        colours["text"] = "#FFFFFF"
-        colours["but_bg"] = "#555F70"
-    else:
-        colours["bg"] = "#F2F2F2"
-        colours["text"] = "#000000"
-        colours["but_bg"] = "#BFBFBF"
+    colours.update(themes[current_theme.get()])
 
     if colourblind_mode.get():
-        colours["neg"] = "#FF8700"
-        colours["pos"] = "#1E78E5"
+        colours.update({"neg": "#FF8700", "pos": "#1E78E5"})
     else:
-        colours["pos"] = "#109110"
-        colours["neg"] = "#D62F2F"
+        colours.update({"neg": "#D62F2F", "pos": "#109110"})
 
     loadFrames()
 
@@ -295,25 +292,24 @@ def closeCurrentFrame():
     close[current_frame.get()]()
 
 
-colours = {
-    "bg": "#2E3142",
-    "text": "#FFFFFF",
-    "but_bg": "#555F70",
-    "neg": "#D62F2F",
-    "pos": "#109110",
-}
+# Loads the data in the file themes.json into a dictionary
+with open("themes.json", "r") as file:
+    themes = json.load(file)
+colours = {}
+colours.update(themes["Dark"])  # Sets the current theme to dark
 
 root = Tk()  # Creates the window
 root.title("Main window")  # Sets the window title
 root.geometry("1000x600")  # Sets the window dimensions
 root.resizable(False, False)  # Prevents user from adjusting window size
 
-menu_frame = Frame(root, bg=colours["bg"])
-info_frame = Frame(root, bg=colours["bg"])
-sim_frame = Frame(root, bg=colours["bg"])
+# The frames used on the window
+menu_frame = Frame(root)
+info_frame = Frame(root)
+sim_frame = Frame(root)
 
 current_frame = StringVar(value="menu")  # Variable to store the current open frame
-dark = BooleanVar(value=True)  # Boolean value for if the theme is dark
+current_theme = StringVar(value="Dark")  # Variable to store the current theme
 colourblind_mode = BooleanVar(value=False)  # Boolean value for if colourblind mode is active
 
 drag = False
@@ -329,7 +325,7 @@ air_density = StringVar()
 drag_coefficient = StringVar()
 surface_area = StringVar()
 
-loadToolsFrame()
-loadMenuFrame()
+loadToolsFrame()  # Loads the toolbar
+loadMenuFrame()  # Loads the menu
 
-root.mainloop()
+root.mainloop()  # Runs the program

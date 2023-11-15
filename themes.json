@@ -1,0 +1,4 @@
+{
+  "Dark": {"bg": "#2E3142", "text": "#FFFFFF", "but_bg": "#555F70", "neg": "#D62F2F", "pos": "#109110"},
+  "Light": {"bg": "#F2F2F2", "text": "#000000", "but_bg": "#BFBFBF", "neg": "#D62F2F", "pos": "#109110"}
+}
