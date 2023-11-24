@@ -67,6 +67,7 @@ class ProjectileNoDrag(Projectile):
         self.max_h = self.position(self.max_t)[2]
         self.landing_time = self.max_t - ((self.u[2] ** 2 - 2 * self.g[2] * self.pos0[2]) ** 0.5) / self.g[2]
         self.landing_pos = self.position(self.landing_time)
+        self.calcVelocity(self.landing_time)
 
     def position(self, time: float):
         return self.pos0 + self.u * time + 0.5 * self.g * time ** 2
@@ -77,8 +78,8 @@ class ProjectileNoDrag(Projectile):
         self.coords.append([*self.pos])
 
     # Calculates the velocity of the projectile at a given time
-    def calcVelocity(self):
-        self.v = self.u + self.g * self.time
+    def calcVelocity(self, time):
+        self.v = self.u + self.g * time
 
 
 class ProjectileDrag(Projectile):
