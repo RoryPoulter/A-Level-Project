@@ -1,12 +1,13 @@
 # The main body of code
 # Created: 04/10/23
-# Last edited: 16/11/23
+# Last edited: 30/11/23
 
 import projectile  # Projectile calculations
 from tkinter import *  # GUI
 from tkinter import messagebox  # Error messages
 import sqlite3  # Database
 import json  # Themes
+import ctypes
 
 
 # Checks if the data fall within the correct ranges
@@ -58,8 +59,6 @@ def loadToolsFrame():
            borderwidth=0, font=("Calibri", 16)).pack(side=LEFT)
     Button(tools_frame, bg=colours["neg"], fg="#FFFFFF", text="X", command=loadMenuFrame, borderwidth=0,
            font=("Calibri", 16)).pack(side=RIGHT)
-    Button(tools_frame, bg=colours["but_bg"], fg=colours["text"], text="Presets", borderwidth=0, font=("Calibri", 16),
-           command=openDatabaseWindow).pack(side=LEFT, padx=2)
 
 
 def loadMenuFrame():
@@ -90,11 +89,11 @@ def loadInfoFrame():
 def loadSimFrame():
     def displayResults():
         position_label.config(text=position.get())
-        velocity_label.config(text=velocity.get()+"m/s")
-        displacement_label.config(text=displacement.get()+"m")
-        landing_time_label.config(text=landing_time.get()+"s")
-        max_height_label.config(text=max_height.get()+"m")
-        time_label.config(text=time.get()+"s")
+        velocity_label.config(text=velocity.get() + "m/s")
+        displacement_label.config(text=displacement.get() + "m")
+        landing_time_label.config(text=landing_time.get() + "s")
+        max_height_label.config(text=max_height.get() + "m")
+        time_label.config(text=time.get() + "s")
 
     def run():
         # Stores all inputs as a list
@@ -147,14 +146,14 @@ def loadSimFrame():
 
         if drag:
             position.set("\n".join(str(round(x, 5)) for x in proj.pos))
-            landing_time.set(str(round(proj.time, 5))+"s")
+            landing_time.set(str(round(proj.time, 5)) + "s")
         else:
             position.set("\n".join(str(round(x, 5)) for x in proj.landing_pos))
-            landing_time.set(str(round(proj.landing_time, 5))+"s")
-        velocity.set(str(round(projectile.mag(proj.v), 5))+"m/s")
-        displacement.set(str(round(proj.calcDisplacement(), 5))+"m")
-        max_height.set(str(round(proj.max_h, 5))+"m")
-        time.set(str(round(proj.max_t, 5))+"s")
+            landing_time.set(str(round(proj.landing_time, 5)) + "s")
+        velocity.set(str(round(projectile.mag(proj.v), 5)) + "m/s")
+        displacement.set(str(round(proj.calcDisplacement(), 5)) + "m")
+        max_height.set(str(round(proj.max_h, 5)) + "m")
+        time.set(str(round(proj.max_t, 5)) + "s")
         displayResults()
 
         # Loads the 3D scatter graph
@@ -252,19 +251,14 @@ def loadSimFrame():
 
     Label(sim_frame, text="Position:", bg=colours["bg"], fg=colours["text"], font=("Calibri", 14), width=12,
           anchor="e").place(x=700, y=100)
-
     Label(sim_frame, text="Final Velocity:", bg=colours["bg"], fg=colours["text"], font=("Calibri", 14), width=12,
           anchor="e").place(x=700, y=190)
-
     Label(sim_frame, text="Displacement:", bg=colours["bg"], fg=colours["text"],
           font=("Calibri", 14), width=12, anchor="e").place(x=700, y=220)
-
     Label(sim_frame, text="Landing Time:", bg=colours["bg"], fg=colours["text"],
           font=("Calibri", 14), width=12, anchor="e").place(x=700, y=250)
-
     Label(sim_frame, text="Max Height:", bg=colours["bg"], fg=colours["text"], font=("Calibri", 14),
           width=12, anchor="e").place(x=700, y=280)
-
     Label(sim_frame, text="Time:", bg=colours["bg"], fg=colours["text"], font=("Calibri", 14), width=12,
           anchor="e").place(x=700, y=310)
 
@@ -284,6 +278,9 @@ def loadSimFrame():
     time_label = Label(sim_frame, bg=colours["bg"], fg=colours["text"], font=("Calibri", 14), textvariable=time)
     time_label.place(x=825, y=310)
 
+    Button(sim_frame, bg=colours["but_bg"], fg=colours["text"], text="Presets", borderwidth=0, font=("Calibri", 14),
+           width=15, command=openDatabaseWindow).place(x=450, y=460)
+
 
 def openSettingsWindow():
     global settings_win
@@ -300,7 +297,9 @@ def loadSettingsFrame(win: Tk):
     settings_frame = Frame(win, bg=colours["bg"])
     settings_frame.place(x=0, y=0, width=400, height=250)
 
-    Label(settings_frame, bg=colours["bg"], fg=colours["text"], text="Settings", font=("Calibri", 18)).place(relx=0.5, y=30, anchor=CENTER)
+    Label(settings_frame, bg=colours["bg"], fg=colours["text"], text="Settings", font=("Calibri", 18)).place(relx=0.5,
+                                                                                                             y=30,
+                                                                                                             anchor=CENTER)
     Label(settings_frame, bg=colours["bg"], fg=colours["text"], text="Theme:", font=("Calibri", 14)).place(x=50, y=70)
 
     menu = OptionMenu(settings_frame, current_theme, *themes)
@@ -404,7 +403,6 @@ def openDatabaseWindow():
         motion_record = values[0:6]
         environment_record = values[6:8]
         projectile_record = values[8:]
-        print(motion_record, environment_record, projectile_record)
 
         # Finds environment id
         c.execute("SELECT EID FROM Environments WHERE (gravity,air_density) IS (?,?)", environment_record)
@@ -463,10 +461,35 @@ def openDatabaseWindow():
                font=("Calibri", 14), command=loadDatabaseViewFrame).place(x=550, y=250, anchor=CENTER)
 
     def loadDatabaseViewFrame():
+        def loadRecord():
+            ...
+
+        def previewRecord():
+            ...
+
         db_view_frame = Frame(database_win, bg=colours["bg"])
         db_view_frame.place(x=0, y=26, width=800, height=374)
         Label(db_view_frame, bg=colours["bg"], fg=colours["text"], text="View Presets",
               font=("Calibri", 20)).place(relx=0.5, y=50, anchor=CENTER)
+
+        c.execute("SELECT name, drag FROM Presets")
+        records = list(dict(c.fetchall()).keys())
+
+        preview_button = Button(db_view_frame, text="Preview", bg=colours["but_bg"], fg=colours["text"],
+                                command=previewRecord, borderwidth=0, disabledforeground=colours["text"])
+        preview_button.place(x=250, y=150)
+        variable = StringVar(database_win)
+        variable.set("Select Preset")
+        try:
+            menu = OptionMenu(db_view_frame, variable, *records)
+        except TypeError:  # Runs if there are no records
+            variable.set("No Presets")
+            records = [" "]
+            menu = OptionMenu(db_view_frame, variable, *records)
+            menu.config(state="disabled", disabledforeground=colours["text"])
+            preview_button.config(state="disabled")
+        menu.config(borderwidth=0, fg=colours["text"], bg=colours["but_bg"])
+        menu.place(x=100, y=150)
 
     def loadDatabaseSaveFrame():
         db_save_frame = Frame(database_win, bg=colours["bg"])
@@ -481,12 +504,10 @@ def openDatabaseWindow():
         Button(db_save_frame, bg=colours["but_bg"], fg=colours["text"], text="Save Preset",
                command=saveRecord, borderwidth=0, font=("Calibri", 14)).place(relx=0.5, y=225, anchor=CENTER)
 
-    global database_win
     database_win = Toplevel(root)
 
     new_preset = StringVar(database_win)
 
-    database_win.attributes('-topmost', 'true')
     database_win.resizable(False, False)
     database_win.title("Database")
     database_win.geometry("800x400")
@@ -533,6 +554,8 @@ FOREIGN KEY (EID) REFERENCES Environments (EID),
 FOREIGN KEY (PID) REFERENCES Projectiles (PID),
 FOREIGN KEY (MID) REFERENCES Motion (MID))""")
 db.commit()  # Saves any changes
+
+ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 root = Tk()  # Creates the window
 root.title("Main window")  # Sets the window title
