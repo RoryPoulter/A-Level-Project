@@ -367,7 +367,39 @@ def openDatabaseWindow():
             ...
 
         def previewRecord():
-            c.execute("SELECT")
+            record_name = chosen_record.get()
+            if record_name == "Select Preset":
+                return
+            c.execute("""SELECT Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
+                               Environments.gravity, Environments.air_density,
+                               Presets.drag, 
+                               Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
+                               FROM Motion, Environments, Presets, Projectiles 
+                               WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
+                               Presets.name=?""",
+                      [record_name])
+            record = c.fetchall()[0]
+            record_drag = bool(record[7])
+            print(record)
+            v_label.config(text=record[0])
+            ele_label.config(text=record[1])
+            azi_label.config(text=record[2])
+            x_label.config(text=record[3])
+            y_label.config(text=record[4])
+            z_label.config(text=record[5])
+            g_label.config(text=record[6])
+            drag_label.config(text=record_drag)
+
+            if record_drag:
+                m_label.config(text=record[8])
+                rho_label.config(text=record[9])
+                cd_label.config(text=record[10])
+                a_label.config(text=record[11])
+            else:
+                m_label.config(text="")
+                rho_label.config(text="")
+                cd_label.config(text="")
+                a_label.config(text="")
 
         db_view_frame = Frame(database_win, bg=colours["bg"])
         db_view_frame.place(x=0, y=26, width=800, height=374)
