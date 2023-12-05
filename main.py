@@ -347,107 +347,6 @@ def closeCurrentFrame():
 
 
 def openDatabaseWindow():
-    def saveRecord():
-        c.execute("SELECT name FROM Presets WHERE name=?", [new_preset.get()])  # Checks if name is unique
-        records = c.fetchall()
-        if records:
-            messagebox.showerror("Error", "Invalid input: name already in use")
-            return
-        if len(new_preset.get()) > 20:
-            messagebox.showerror("Error", "Invalid input: name must be at most 20 characters")
-            return
-        elif new_preset.get() == "":
-            messagebox.showerror("Error", "Invalid input: name field empty")
-            return
-
-        values = [
-            initial_velocity.get(),
-            elevation_angle.get(),
-            azimuth_angle.get(),
-            x0.get(),
-            y0.get(),
-            z0.get(),
-            gravity.get()
-        ]
-        if drag:
-            values += [
-                air_density.get(),
-                mass.get(),
-                drag_coefficient.get(),
-                surface_area.get()
-            ]
-
-        # Checks for any empty fields
-        if "" in values:
-            messagebox.showerror("Error", "Empty fields")
-            return
-        # Checks for invalid inputs
-        try:
-            if drag:
-                values = list(map(lambda x: float(x), values))
-            else:
-                values = list(map(lambda x: float(x), values[0:7])) + [None] * 4
-        except ValueError:
-            messagebox.showerror("Error", "Inputs must be numbers")
-            return
-
-        # Passes the values into the function verifyInputs to check validity
-        if drag:
-            valid = verifyInputs(*values[0:6], drag, *values[6:])
-        else:
-            valid = verifyInputs(*values)
-
-        if not valid:
-            return
-
-        motion_record = values[0:6]
-        environment_record = values[6:8]
-        projectile_record = values[8:]
-
-        # Finds environment id
-        c.execute("SELECT EID FROM Environments WHERE (gravity,air_density) IS (?,?)", environment_record)
-        eid = c.fetchall()
-        if not eid:
-            c.execute("INSERT INTO Environments (gravity,air_density) VALUES (?,?)", tuple(environment_record))
-            db.commit()
-            c.execute("SELECT EID FROM Environments WHERE (gravity,air_density) IS (?,?)", environment_record)
-            eid = c.fetchall()[0][0]
-        else:
-            eid = eid[0][0]
-
-        # Finds projectile id
-        c.execute("SELECT PID FROM Projectiles WHERE (mass,drag_coefficient,area) IS (?,?,?)", projectile_record)
-        pid = c.fetchall()
-        if not pid:
-            c.execute("INSERT INTO Projectiles (mass,drag_coefficient,area) VALUES (?,?,?)", tuple(projectile_record))
-            db.commit()
-            c.execute("SELECT PID FROM Projectiles WHERE (mass,drag_coefficient,area) IS (?,?,?)", projectile_record)
-            pid = c.fetchall()[0][0]
-        else:
-            pid = pid[0][0]
-
-        # Finds motion id
-        c.execute("SELECT MID FROM Motion WHERE (velocity,ele_angle,azi_angle,x,y,z) IS (?,?,?,?,?,?)", motion_record)
-        mid = c.fetchall()
-        if not mid:
-            c.execute("INSERT INTO Motion (velocity,ele_angle,azi_angle,x,y,z) VALUES (?,?,?,?,?,?)",
-                      tuple(motion_record))
-            db.commit()
-            c.execute("SELECT MID FROM Motion WHERE (velocity,ele_angle,azi_angle,x,y,z) IS (?,?,?,?,?,?)",
-                      motion_record)
-            mid = c.fetchall()[0][0]
-        else:
-            mid = mid[0][0]
-
-        c.execute("SELECT name FROM Presets WHERE (EID,PID,MID)=(?,?,?)", [eid, pid, mid])
-        repeats = c.fetchall()
-        if not repeats:
-            c.execute("INSERT INTO Presets (name,drag,EID,PID,MID) VALUES (?,?,?,?,?)",
-                      (new_preset.get(), drag, eid, pid, mid))
-            db.commit()
-        else:
-            messagebox.showerror("Error", f"Invalid value/s: record already exists under '{repeats[0][0]}'")
-            return
 
     def loadDatabaseMenuFrame():
         db_menu_frame = Frame(database_win, bg=colours["bg"])
@@ -461,37 +360,191 @@ def openDatabaseWindow():
                font=("Calibri", 14), command=loadDatabaseViewFrame).place(x=550, y=250, anchor=CENTER)
 
     def loadDatabaseViewFrame():
+        def deleteRecord():
+            ...
+
         def loadRecord():
             ...
 
         def previewRecord():
-            ...
+            c.execute("SELECT")
 
         db_view_frame = Frame(database_win, bg=colours["bg"])
         db_view_frame.place(x=0, y=26, width=800, height=374)
         Label(db_view_frame, bg=colours["bg"], fg=colours["text"], text="View Presets",
               font=("Calibri", 20)).place(relx=0.5, y=50, anchor=CENTER)
 
+        # Fetches all records to be displayed in dropdown menu
         c.execute("SELECT name, drag FROM Presets")
         records = list(dict(c.fetchall()).keys())
 
         preview_button = Button(db_view_frame, text="Preview", bg=colours["but_bg"], fg=colours["text"],
                                 command=previewRecord, borderwidth=0, disabledforeground=colours["text"])
-        preview_button.place(x=250, y=150)
-        variable = StringVar(database_win)
-        variable.set("Select Preset")
+        preview_button.place(x=250, y=120)
+        chosen_record = StringVar(database_win)
+        chosen_record.set("Select Preset")
         try:
-            menu = OptionMenu(db_view_frame, variable, *records)
+            menu = OptionMenu(db_view_frame, chosen_record, *records)
         except TypeError:  # Runs if there are no records
-            variable.set("No Presets")
+            chosen_record.set("No Presets")
             records = [" "]
-            menu = OptionMenu(db_view_frame, variable, *records)
+            menu = OptionMenu(db_view_frame, chosen_record, *records)
             menu.config(state="disabled", disabledforeground=colours["text"])
             preview_button.config(state="disabled")
         menu.config(borderwidth=0, fg=colours["text"], bg=colours["but_bg"])
-        menu.place(x=100, y=150)
+        menu.place(x=100, y=120)
+
+        Label(db_view_frame, text="v [m/s]:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=120, y=170)
+        Label(db_view_frame, text="θe [°]:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=120, y=190)
+        Label(db_view_frame, text="θa [°]:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=120, y=210)
+        Label(db_view_frame, text="x:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=120, y=230)
+        Label(db_view_frame, text="y:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=120, y=250)
+        Label(db_view_frame, text="z:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=120, y=270)
+        Label(db_view_frame, text="g [m/s²]:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=120, y=290)
+
+        v_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        ele_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        azi_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        x_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        y_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        z_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        g_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+
+        for count, label in enumerate((v_label, ele_label, azi_label, x_label, y_label, z_label, g_label)):
+            label.place(x=200, y=170+count*20)
+
+        Label(db_view_frame, text="Drag:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=350, y=170)
+        Label(db_view_frame, text="m [kg]:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=350, y=190)
+        Label(db_view_frame, text="ρ [kg/m³]:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=350, y=210)
+        Label(db_view_frame, text="C:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=350, y=230)
+        Label(db_view_frame, text="A [m²]:", anchor="e", width=10, bg=colours["bg"], fg=colours["text"]).place(x=350, y=250)
+
+        drag_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        m_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        rho_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        cd_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+        a_label = Label(db_view_frame, bg=colours["bg"], fg=colours["text"])
+
+        for count, label in enumerate((drag_label, m_label, rho_label, cd_label, a_label)):
+            label.place(x=430, y=170+count*20)
+
+        Button(db_view_frame, text="Load", bg=colours["but_bg"], fg=colours["text"], borderwidth=0,
+               font=("Calibri", 14), width=10, command=loadRecord).place(x=600, y=220)
+        Button(db_view_frame, text="Delete", bg=colours["neg"], fg="#FFFFFF", borderwidth=0,
+               font=("Calibri", 14), width=10, command=deleteRecord).place(x=600, y=270)
 
     def loadDatabaseSaveFrame():
+        def saveRecord():
+            # Checks if name is unique
+            c.execute("SELECT name FROM Presets WHERE name=?", [new_preset.get()])
+            records = c.fetchall()
+            if records:  # Checks if name is unique
+                messagebox.showerror("Error", "Invalid input: name already in use")
+                return
+            if len(new_preset.get()) > 20:  # Checks if the name is too long
+                messagebox.showerror("Error", "Invalid input: name must be at most 20 characters")
+                return
+            elif new_preset.get() == "":  # Checks if the field is empty
+                messagebox.showerror("Error", "Invalid input: name field empty")
+                return
+
+            values = [
+                initial_velocity.get(),
+                elevation_angle.get(),
+                azimuth_angle.get(),
+                x0.get(),
+                y0.get(),
+                z0.get(),
+                gravity.get(),
+                drag
+            ]
+            if drag:
+                values += [
+                    air_density.get(),
+                    mass.get(),
+                    drag_coefficient.get(),
+                    surface_area.get()
+                ]
+            else:
+                values += [None] * 4
+
+            # Checks for any empty fields
+            if "" in values:
+                messagebox.showerror("Error", "Empty fields")
+                return
+
+            # Checks for invalid inputs
+            try:
+                if drag:
+                    values = list(map(lambda x: float(x), values))
+                else:
+                    values[0:7] = list(map(lambda x: float(x), values[0:7]))
+            except ValueError:
+                messagebox.showerror("Error", "Inputs must be numbers")
+                return
+
+            # Passes the values into the function verifyInputs to check validity
+            valid = verifyInputs(*values)
+            if not valid:
+                return
+
+            motion_record = values[0:6]
+            environment_record = values[7:9]
+            projectile_record = values[9:]
+
+            # Finds environment id
+            c.execute("SELECT EID FROM Environments WHERE (gravity,air_density) IS (?,?)",
+                      environment_record)
+            eid = c.fetchall()
+            if not eid:
+                c.execute("INSERT INTO Environments (gravity,air_density) VALUES (?,?)",
+                          tuple(environment_record))
+                db.commit()
+                c.execute("SELECT EID FROM Environments WHERE (gravity,air_density) IS (?,?)",
+                          environment_record)
+                eid = c.fetchall()[0][0]
+            else:
+                eid = eid[0][0]
+
+            # Finds projectile id
+            c.execute("SELECT PID FROM Projectiles WHERE (mass,drag_coefficient,area) IS (?,?,?)",
+                      projectile_record)
+            pid = c.fetchall()
+            if not pid:
+                c.execute("INSERT INTO Projectiles (mass,drag_coefficient,area) VALUES (?,?,?)",
+                          tuple(projectile_record))
+                db.commit()
+                c.execute("SELECT PID FROM Projectiles WHERE (mass,drag_coefficient,area) IS (?,?,?)",
+                          projectile_record)
+                pid = c.fetchall()[0][0]
+            else:
+                pid = pid[0][0]
+
+            # Finds motion id
+            c.execute("SELECT MID FROM Motion WHERE (velocity,ele_angle,azi_angle,x,y,z) IS (?,?,?,?,?,?)",
+                      motion_record)
+            mid = c.fetchall()
+            if not mid:
+                c.execute("INSERT INTO Motion (velocity,ele_angle,azi_angle,x,y,z) VALUES (?,?,?,?,?,?)",
+                          tuple(motion_record))
+                db.commit()
+                c.execute("SELECT MID FROM Motion WHERE (velocity,ele_angle,azi_angle,x,y,z) IS (?,?,?,?,?,?)",
+                          motion_record)
+                mid = c.fetchall()[0][0]
+            else:
+                mid = mid[0][0]
+
+            c.execute("SELECT name FROM Presets WHERE (EID,PID,MID)=(?,?,?)", [eid, pid, mid])
+            repeats = c.fetchall()
+            if not repeats:
+                c.execute("INSERT INTO Presets (name,drag,EID,PID,MID) VALUES (?,?,?,?,?)",
+                          (new_preset.get(), drag, eid, pid, mid))
+                db.commit()
+            else:
+                messagebox.showerror("Error", f"Invalid value/s: record already exists under '{repeats[0][0]}'")
+                return
+
+        new_preset = StringVar(database_win)
         db_save_frame = Frame(database_win, bg=colours["bg"])
         db_save_frame.place(x=0, y=26, width=800, height=374)
         Label(db_save_frame, bg=colours["bg"], fg=colours["text"], text="Save Preset",
@@ -505,9 +558,6 @@ def openDatabaseWindow():
                command=saveRecord, borderwidth=0, font=("Calibri", 14)).place(relx=0.5, y=225, anchor=CENTER)
 
     database_win = Toplevel(root)
-
-    new_preset = StringVar(database_win)
-
     database_win.resizable(False, False)
     database_win.title("Database")
     database_win.geometry("800x400")
