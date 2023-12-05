@@ -361,7 +361,10 @@ def openDatabaseWindow():
 
     def loadDatabaseViewFrame():
         def deleteRecord():
-            ...
+            record_name = chosen_record.get()
+            c.execute("DELETE FROM Presets WHERE name=?", [record_name])
+            db.commit()
+            records.remove(record_name)
 
         def loadRecord():
             ...
@@ -371,16 +374,15 @@ def openDatabaseWindow():
             if record_name == "Select Preset":
                 return
             c.execute("""SELECT Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
-                               Environments.gravity, Environments.air_density,
-                               Presets.drag, 
-                               Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
-                               FROM Motion, Environments, Presets, Projectiles 
-                               WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
-                               Presets.name=?""",
+            Environments.gravity, Environments.air_density,
+            Presets.drag, 
+            Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
+            FROM Motion, Environments, Presets, Projectiles 
+            WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
+            Presets.name=?""",
                       [record_name])
             record = c.fetchall()[0]
             record_drag = bool(record[7])
-            print(record)
             v_label.config(text=record[0])
             ele_label.config(text=record[1])
             azi_label.config(text=record[2])
@@ -388,14 +390,15 @@ def openDatabaseWindow():
             y_label.config(text=record[4])
             z_label.config(text=record[5])
             g_label.config(text=record[6])
-            drag_label.config(text=record_drag)
 
             if record_drag:
+                drag_label.config(text="True")
                 m_label.config(text=record[8])
                 rho_label.config(text=record[9])
                 cd_label.config(text=record[10])
                 a_label.config(text=record[11])
             else:
+                drag_label.config(text="False")
                 m_label.config(text="")
                 rho_label.config(text="")
                 cd_label.config(text="")
