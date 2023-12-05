@@ -10,11 +10,15 @@ The effects of drag can be included/excluded to show how it affects a projectile
 The program uses tkinter for the main GUI, and matplotlib to display the results. 
 The appearance of the GUI can be changed by toggling colourblind mode and changing the theme.
 The themes are stored in an external JSON file.
-The program uses numpy for the vector calculations.
+
+The program uses NumPy for the vector calculations. Due to the nature of the drag calculations, results 
+including drag are only approximations.
+
+Presets for values can be stores in an external .db file to be loaded later.
 
 Currently in development.
 Future updates will include:
 <ul>
-    <li>SQLite database to store presets for the inputs\
     <li>Embed flight path in window
+    <li>Additional themes
 </ul>
