@@ -360,7 +360,7 @@ def openDatabaseWindow():
     def loadDatabaseViewFrame():
         def deleteRecord():
             record_name = chosen_record.get()
-            if record_name == "Select Preset":
+            if record_name == "Select Preset" or record_name == "No Presets":
                 return
             c.execute("DELETE FROM Presets WHERE name=?", [record_name])
             db.commit()
@@ -369,7 +369,7 @@ def openDatabaseWindow():
         def loadRecord():
             global drag
             record_name = chosen_record.get()
-            if record_name == "Select Preset":
+            if record_name == "Select Preset" or record_name == "No Presets":
                 return
             c.execute("""SELECT Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
                         Environments.gravity, Environments.air_density,
