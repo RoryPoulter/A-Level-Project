@@ -1,6 +1,6 @@
 # The main body of code
 # Created: 04/10/23
-# Last edited: 30/11/23
+# Last edited: 06/11/23
 
 import projectile  # Projectile calculations
 from tkinter import *  # GUI
@@ -62,7 +62,7 @@ def loadToolsFrame():
 
 
 def loadMenuFrame():
-    closeCurrentFrame()
+    closeCurrentFrame()  # Closes the current frame
     current_frame.set("menu")
     menu_frame.config(bg=colours["bg"])
     menu_frame.place(x=0, y=26, width=1000, height=574)
@@ -75,13 +75,13 @@ def loadMenuFrame():
 
 
 def loadInfoFrame():
-    closeCurrentFrame()
+    closeCurrentFrame()  # Closes the current frame
     current_frame.set("info")
     info_frame.config(bg=colours["bg"])
     info_frame.place(x=0, y=26, width=1000, height=574)
-    with open("definitions.txt", "r", encoding="utf-8") as file:
+    with open("definitions.txt", "r", encoding="utf-8") as file:  # Opens the file
         for num, line in enumerate(file):
-            definition = line.strip()
+            definition = line.strip()  # Removes line breaks
             Label(info_frame, text=definition, bg=colours["bg"], fg=colours["text"],
                   font=("Calibri", 14)).place(x=20, y=50 * (num + 1))
 
@@ -285,11 +285,10 @@ def loadSimFrame():
 def openSettingsWindow():
     global settings_win
     settings_win = Toplevel(root)
-    settings_win.attributes('-topmost', 'true')
-    settings_win.resizable(False, False)
+    settings_win.resizable(False, False)  # Keeps window the same size
     settings_win.title("Settings")
     settings_win.geometry("400x250")
-    settings_win.grab_set()
+    settings_win.grab_set()  # Forces window above main window
     loadSettingsFrame(settings_win)
 
 
@@ -297,9 +296,8 @@ def loadSettingsFrame(win: Tk):
     settings_frame = Frame(win, bg=colours["bg"])
     settings_frame.place(x=0, y=0, width=400, height=250)
 
-    Label(settings_frame, bg=colours["bg"], fg=colours["text"], text="Settings", font=("Calibri", 18)).place(relx=0.5,
-                                                                                                             y=30,
-                                                                                                             anchor=CENTER)
+    Label(settings_frame, bg=colours["bg"], fg=colours["text"], text="Settings",
+          font=("Calibri", 18)).place(relx=0.5, y=30, anchor=CENTER)
     Label(settings_frame, bg=colours["bg"], fg=colours["text"], text="Theme:", font=("Calibri", 14)).place(x=50, y=70)
 
     menu = OptionMenu(settings_frame, current_theme, *themes)
@@ -316,14 +314,14 @@ def loadSettingsFrame(win: Tk):
 
 
 def updateScheme():
-    colours.update(themes[current_theme.get()])
+    colours.update(themes[current_theme.get()])  # Updates the colours dictionary with the values of the chosen theme
 
     if colourblind_mode.get():
         colours.update({"neg": "#FF8700", "pos": "#1E78E5"})
     else:
         colours.update({"neg": "#D62F2F", "pos": "#109110"})
 
-    loadFrames()
+    loadFrames()  # Reloads the frames with the new theme
 
 
 def loadFrames():
@@ -334,7 +332,7 @@ def loadFrames():
     }
     loadToolsFrame()
     loadSettingsFrame(settings_win)
-    frames[current_frame.get()]()
+    frames[current_frame.get()]()  # Gets the value of current_frame and calls the associated function
 
 
 def closeCurrentFrame():
@@ -676,10 +674,10 @@ menu_frame = Frame(root)
 info_frame = Frame(root)
 sim_frame = Frame(root)
 
-# Loads the data in the file themes.json into a dictionary
-with open("themes.json", "r") as file:
-    themes = json.load(file)
-colours = {}
+
+with open("themes.json", "r") as file:  # Opens the JSON file
+    themes = json.load(file)  # Loads all themes to dictionary
+colours = {}  # Stores the current theme
 colours.update(themes["Dark"])  # Sets the current theme to dark
 current_theme = StringVar(value="Dark")  # Variable to store the current theme
 colourblind_mode = BooleanVar(value=False)  # Boolean value for if colourblind mode is active
