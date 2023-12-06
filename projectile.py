@@ -46,6 +46,10 @@ class Projectile:
 
         n = (len(self.coords) // 20) + 1
 
+        max_coords = max([max(row[0] for row in self.coords),  # Finds the max coordinate
+                          max(row[1] for row in self.coords),
+                          max(row[2] for row in self.coords)])
+
         ax.scatter([row[0] for row in self.coords][::n],
                    [row[1] for row in self.coords][::n],
                    [row[2] for row in self.coords][::n],
@@ -54,6 +58,11 @@ class Projectile:
         ax.set_xlabel('X Axis / m')
         ax.set_ylabel('Y Axis / m')
         ax.set_zlabel('Z Axis / m')
+
+        # Keeps the same scale with axes
+        ax.set_xlim3d(0, max_coords)
+        ax.set_ylim3d(0, max_coords)
+        ax.set_zlim3d(0, max_coords)
 
         plt.show()
 
