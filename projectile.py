@@ -67,11 +67,12 @@ class Projectile:
         s = self.pos - self.pos0
         return mag(s)
 
-    def displayPath(self):
+    def displayPath(self, fig):
         """
         Plots the flight path on a 3D scatter graph
+        :param fig: Matplotlib figure
+        :return: Returns the Matplotlib subplot
         """
-        fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
         n = (len(self.coords) // 20) + 1
@@ -94,7 +95,7 @@ class Projectile:
         ax.set_ylim3d(0, max_coords)
         ax.set_zlim3d(0, max_coords)
 
-        plt.show()
+        return ax
 
 
 class ProjectileNoDrag(Projectile):
@@ -190,15 +191,16 @@ class ProjectileDrag(Projectile):
         self.coords.append([*self.pos])
 
 
-def compare_paths(projectile_1, projectile_2):
+def compare_paths(projectile_1, projectile_2, fig):
     """
     Plots the flight paths of two projectiles on one scatter graph
     :param projectile_1: The 1st projectile object
     :type projectile_1: Projectile
     :param projectile_2: The 2nd projectile object
     :type projectile_2: Projectile
+    :param fig: Matplotlib figure
+    :return: Matplotlib subplot
     """
-    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     for projectile in (projectile_1, projectile_2):
@@ -227,7 +229,7 @@ def compare_paths(projectile_1, projectile_2):
     ax.set_ylim3d(0, max_coords)
     ax.set_zlim3d(0, max_coords)
 
-    plt.show()
+    return ax
 
 
 if __name__ == "__main__":
