@@ -1,0 +1,52 @@
+04-10-2023 12:13:03: created mag function, tested using [3, 4], gave correct output of 5.0
+04-10-2023 12:14:27: Passed input of [2, 2, 2, 2] to mag, produced correct input of 4.0
+04-10-2023 12:30:17: Created file projectile.py to store projectile class and mag function
+04-10-2023 14:24:31: Created ProjectileDrag and ProjectileNoDrag subclasses with unique move methods
+04-10-2023 16:40:41: Updated move method for ProjectileDrag class to check if max height has been reached
+04-10-2023 16:47:05: Added function to calculate position at a given time of ProjectileNoDrag, used in move method and to calculate landing position and max height
+04-10-2023 16:53:00: Added calcDisplacement method to Projectile superclass
+04-10-2023 16:57:57: Tested outcome of landing_pos of ProjectileNoDrag object, produced invalid output [0, 0, 0]
+04-10-2023 16:59:42: Fixed logic error in calculating landing time, resolved issue with landing position
+04-10-2023 17:17:21: Uploaded projectile.py to GitHub
+04-10-2023 17:21:55: Created files 'main.py' and 'window test.py'
+04-10-2023 17:40:03: Created main menu without any functionality
+04-10-2023 18:46:11: Created info tab with bounds and definitions
+06-10-2023 11:53:31: Added entry boxes and labels to input frame in window test
+06-10-2023 12:29:08: Added button to toggle drag and disable/enable entry boxes
+07-10-2023 18:16:26: Started developing function to change theme / toggle colourblind mode
+09-10-2023 14:55:28: Started coding function verifyInputs, currently checks data types
+09-10-2023 17:24:14: Updated verifyInputs to check for ranges and return boolean values
+20-10-2023 23:17:07: Fixed issue in projectile.py with displacement of ProjectileDrag objects
+20-10-2023 23:48:25: Improved readability of projectile.py
+23-10-2023 14:00:11: Started testing use of 3D scatter with matplotlib
+01-11-2023 14:16:33: Added method to display points on a 3D scatter
+06-11-2023 19:25:38: Created functions to change appearance settings
+10-11-2023 11:54:09: Moved code to main.py, uploaded to GitHub, created run function
+10-11-2023 12:09:09: Added error messages using TKinter messageboxes
+16-11-2023 12:25:10: Created JSON file to store GUI themes
+16-11-2023 17:45:18: Removed declarations of some entry fields to reduce memory
+17-11-2023 13:11:49: Added attribute to settings window to force above main window
+17-11-2023 13:14:22: Set command of DB button to openDatabaseWindow
+17-11-2023 17:25:35: Added definitions to info frame from file definitions.txt
+17-11-2023 17:33:57: Set encoding of open statement to utf-8 to fix error reading unicode characters
+17-11-2023 17:48:04: Set attribute to force focus on toplevel windows
+17-11-2023 17:54:22: Created menu frame for preset window
+17-11-2023 21:06:05: Created view and save frames for preset window
+17-11-2023 21:21:36: Added widgets to db_save_frame
+18-11-2023 00:50:00: Added SQL statements to create tables, created function to save record to db
+18-11-2023 23:26:42: Added results labels
+18-11-2023 23:49:59: Split position label onto 3 lines to fit on window
+19-11-2023 00:32:42: Added units to results
+19-11-2023 00:40:24: Updated settings window
+01-12-2023 11:47:07: Added new themes]
+05-12-2023 11:58:52: Added function to preview preset
+05-12-2023 14:15:33: Added function to delete record
+05-12-2023 14:45:45: Added function to load presets
+06-12-2023 14:28:15: Edited displayPath to have fixed axes
+08-12-2023 00:48:57: Added docstrings to projectile.py
+08-12-2023 11:22:12: Changed displayPath and comparePaths to return subplots
+08-12-2023 22:48:51: Created file to test fullscreen UI
+08-12-2023 22:57:14: Added functions to change colour of quit button on hover
+09-12-2023 00:11:48: Created custom class for buttons to change colour on hover
+09-12-2023 02:07:31: Added buttons for settings and presets (no funcs)
+09-12-2023 02:20:31: Added if statement to check if activebackground/activeforeground are specified
