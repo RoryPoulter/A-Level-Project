@@ -16,8 +16,8 @@ def verifyInputs(u: float, ele_angle: float, azi_angle: float, x: float, y: floa
     if u <= 0:
         messagebox.showerror("Error", "Invalid input: velocity must fall within the range: 0 < u")
         return False
-    if ele_angle < 0:
-        messagebox.showerror("Error", "Invalid input: elevation angle must fall within the range: 0 ≤ θe")
+    if ele_angle < 0 or ele_angle > 90:
+        messagebox.showerror("Error", "Invalid input: elevation angle must fall within the range: 0 ≤ θe < 90")
         return False
     if azi_angle < 0 or azi_angle >= 360:
         messagebox.showerror("Error", "Invalid input: azimuth angle must fall within the range: 0 ≤ θa < 360")
