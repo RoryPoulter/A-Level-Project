@@ -238,9 +238,18 @@ if __name__ == "__main__":
 
     dt: float = 0.01
 
-    for proj in (proj_1, proj_2):
-        while proj.pos[2] >= 0:
-            proj.move(dt)
-        proj.displayPath()
+    fig_1 = plt.figure()
+    while proj_1.pos[2] >= 0:
+        proj_1.move(dt)
+    ax = proj_1.displayPath(fig_1)
+    plt.show()
 
-    compare_paths(proj_1, proj_2)
+    fig_2 = plt.figure()
+    while proj_2.pos[2] >= 0:
+        proj_2.move(dt)
+    ay = proj_2.displayPath(fig_2)
+    plt.show()
+
+    fig_3 = plt.figure()
+    az = compare_paths(proj_1, proj_2, fig_3)
+    plt.show()
