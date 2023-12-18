@@ -677,7 +677,7 @@ sim_frame = Frame(root)
 
 with open("themes.json", "r") as file:  # Opens the JSON file
     themes = json.load(file)  # Loads all themes to dictionary
-colours = {}  # Stores the current theme
+colours = {"neg": "#D62F2F", "pos": "#109110"}  # Stores the current theme
 colours.update(themes["Dark"])  # Sets the current theme to dark
 current_theme = StringVar(value="Dark")  # Variable to store the current theme
 colourblind_mode = BooleanVar(value=False)  # Boolean value for if colourblind mode is active

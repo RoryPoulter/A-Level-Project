@@ -1,7 +1,7 @@
 {
-  "Dark": {"bg": "#2E3142", "text": "#FFFFFF", "but_bg": "#555F70", "neg": "#D62F2F", "pos": "#109110"},
-  "Light": {"bg": "#7E8D85", "text": "#F0F7F4", "but_bg": "#B3BFB8", "neg": "#D62F2F", "pos": "#109110"},
-  "Deep Sea": {"bg": "#0C1821", "text": "#CCC9DC", "but_bg": "#1B2A41", "neg": "#D62F2F", "pos": "#109110"},
-  "Rose": {"bg": "#461220", "text": "#FED0BB", "but_bg": "#8C2F39", "neg": "#D62F2F", "pos": "#109110"},
-  "Amethyst": {"bg": "#380036", "text": "#F8C0C8", "but_bg": "#821579", "neg": "#D62F2F", "pos": "#109110"}
+  "Dark": {"bg": "#2E3142", "text": "#FFFFFF", "but_bg": "#555F70"},
+  "Light": {"bg": "#7E8D85", "text": "#F0F7F4", "but_bg": "#B3BFB8"},
+  "Deep Sea": {"bg": "#0C1821", "text": "#CCC9DC", "but_bg": "#1B2A41"},
+  "Rose": {"bg": "#461220", "text": "#FED0BB", "but_bg": "#8C2F39"},
+  "Amethyst": {"bg": "#380036", "text": "#F8C0C8", "but_bg": "#821579"}
 }
