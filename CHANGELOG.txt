@@ -54,3 +54,9 @@
 14-12-2023 14:35:15: Updated definitions.txt to include ranges
 14-12-2023 22:45:18: Added attributes "hover_bg" and "hover_fg", and parameters "hoverbackground" and "hoverforeground" to CustomButton class
 14-12-2023 23:30:54: Updated verifyInputs to check if ele_angle is greater than 90
+18-12-2023 22:59:07: Removed neg and pos from themes.json, stored directly in main.py
+18-12-2023 22:59:31: Created dictionary "style" to store aesthetic properties of tkinter widgets
+20-12-2023 09:22:28: Added functionality to GUI test
+20-12-2023 09:30:47: Embedded graph into GUI
+20-12-2023 09:52:02: Updated database window widgets to use styles 
+20-12-2023 09:55:06: Fixed issue with saving presets where value for gravity was value for drag

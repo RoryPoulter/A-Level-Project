@@ -546,7 +546,7 @@ def openDatabaseWindow():
                 return
 
             motion_record = values[0:6]
-            environment_record = values[7:9]
+            environment_record = values[6:9:2]
             projectile_record = values[9:]
 
             # Finds environment id
