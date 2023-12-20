@@ -193,7 +193,7 @@ def openSettingsWindow():
     settings_win = Toplevel(root)
     settings_win.resizable(False, False)  # Keeps window the same size
     settings_win.title("Settings")
-    settings_win.geometry("400x250")
+    settings_win.geometry("400x250+760+415")
     settings_win.grab_set()  # Forces window above main window
     loadSettingsFrame(settings_win)
 
@@ -632,7 +632,7 @@ def openDatabaseWindow():
     database_win = Toplevel(root)
     database_win.resizable(False, False)
     database_win.title("Database")
-    database_win.geometry("800x400")
+    database_win.geometry("800x400+560+340")
     database_win.grab_set()
     db_tool_frame = Frame(database_win, bg=colours["bg"])
     db_tool_frame.place(x=0, y=0, width=800, height=26)

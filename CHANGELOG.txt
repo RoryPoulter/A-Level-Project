@@ -61,3 +61,4 @@
 20-12-2023 09:52:02: Updated database window widgets to use styles 
 20-12-2023 09:55:06: Fixed issue with saving presets where value for gravity was value for drag
 20-12-2023 14:32:09: Fixed issue when loading/previewing presets
+20-12-2023 23:34:34: Database and settings windows open in middle of screen
