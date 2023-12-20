@@ -16,9 +16,16 @@ including drag are only approximations.
 
 Presets for values can be stores in an external .db file to be loaded later.
 
+## Installation
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the required packages.
+```bash
+pip install -r /path/to/requiremnets.txt
+```
+
+## Development
+Written in Python 3.10.\
 Currently in development.
 Future updates will include:
 <ul>
-    <li>Embed flight path in window
     <li>Additional themes
 </ul>
