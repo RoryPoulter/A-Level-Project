@@ -67,12 +67,11 @@ class Projectile:
         s = self.pos - self.pos0
         return mag(s)
 
-    def displayPath(self, fig):
+    def displayPath(self):
         """
         Plots the flight path on a 3D scatter graph
-        :param fig: Matplotlib figure
-        :return: Returns the Matplotlib subplot
         """
+        fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
         n = (len(self.coords) // 20) + 1
@@ -95,7 +94,7 @@ class Projectile:
         ax.set_ylim3d(0, max_coords)
         ax.set_zlim3d(0, max_coords)
 
-        return ax
+        plt.show()
 
 
 class ProjectileNoDrag(Projectile):
@@ -191,16 +190,16 @@ class ProjectileDrag(Projectile):
         self.coords.append([*self.pos])
 
 
-def compare_paths(projectile_1, projectile_2, fig):
+def compare_paths(projectile_1, projectile_2):
     """
     Plots the flight paths of two projectiles on one scatter graph
     :param projectile_1: The 1st projectile object
     :type projectile_1: Projectile
     :param projectile_2: The 2nd projectile object
     :type projectile_2: Projectile
-    :param fig: Matplotlib figure
     :return: Matplotlib subplot
     """
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     for projectile in (projectile_1, projectile_2):
@@ -229,7 +228,7 @@ def compare_paths(projectile_1, projectile_2, fig):
     ax.set_ylim3d(0, max_coords)
     ax.set_zlim3d(0, max_coords)
 
-    return ax
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -237,19 +236,9 @@ if __name__ == "__main__":
     proj_2 = ProjectileNoDrag(50, 60, 60, 0.0, 0.0, 50.0, 9.81, marker="^")
 
     dt: float = 0.01
+    for proj in (proj_1, proj_2):
+        while proj.pos[2] >= 0:
+            proj.move(dt)
+        proj.displayPath()
 
-    fig_1 = plt.figure()
-    while proj_1.pos[2] >= 0:
-        proj_1.move(dt)
-    ax = proj_1.displayPath(fig_1)
-    plt.show()
-
-    fig_2 = plt.figure()
-    while proj_2.pos[2] >= 0:
-        proj_2.move(dt)
-    ay = proj_2.displayPath(fig_2)
-    plt.show()
-
-    fig_3 = plt.figure()
-    az = compare_paths(proj_1, proj_2, fig_3)
-    plt.show()
+    compare_paths(proj_1, proj_2)
