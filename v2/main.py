@@ -394,8 +394,8 @@ def openDatabaseWindow():
             if record_name == "Select Preset" or record_name == "No Presets":
                 return
             c.execute("""SELECT Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
-                        Environments.gravity, Environments.air_density,
-                        Presets.drag, 
+                        Environments.gravity, Presets.drag, 
+                        Environments.air_density,
                         Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
                         FROM Motion, Environments, Presets, Projectiles 
                         WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
@@ -426,7 +426,7 @@ def openDatabaseWindow():
             Presets.name=?""",
                       [record_name])
             record = c.fetchall()[0]
-            record_drag = bool(record[7])
+            record_drag = bool(record[8])
             v_label.config(text=record[0])
             ele_label.config(text=record[1])
             azi_label.config(text=record[2])
@@ -437,8 +437,8 @@ def openDatabaseWindow():
 
             if record_drag:
                 drag_label.config(text="True")
-                m_label.config(text=record[8])
-                rho_label.config(text=record[9])
+                m_label.config(text=record[9])
+                rho_label.config(text=record[7])
                 cd_label.config(text=record[10])
                 a_label.config(text=record[11])
             else:
