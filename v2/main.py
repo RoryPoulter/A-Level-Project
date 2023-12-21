@@ -217,11 +217,11 @@ def loadSettingsFrame(win: Toplevel):
     Label(settings_frame, **style["label"], text="Theme:").place(x=50, y=70)
 
     menu = OptionMenu(settings_frame, current_theme, *themes)
-    menu.config(bg=colours["but_bg"], fg=colours["text"], borderwidth=0, highlightbackground=colours["bg"],
-                font=("Calibri", 12), width=10, activeforeground=colours["text"], activebackground=colours["but_bg"])
+    menu.config(**style["menu"], width=10)
     menu.place(x=120, y=70)
 
-    Checkbutton(settings_frame, **style["checkbutton"], text="Colourblind Mode", variable=colourblind_mode).place(x=50, y=120)
+    Checkbutton(settings_frame, **style["checkbutton"], text="Colourblind Mode", variable=colourblind_mode).place(x=50,
+                                                                                                                  y=120)
 
     Button(settings_frame, bg=colours["but_bg"], fg=colours["text"], text="Confirm", command=updateScheme,
            borderwidth=0).pack(anchor="s", side=RIGHT)
@@ -304,6 +304,15 @@ def loadTheme():
             "activeforeground": colours["text"],
             "activebackground": colours["bg"],
             "selectcolor": colours["but_bg"]
+        },
+        "menu": {
+            "bg": colours["but_bg"],
+            "fg": colours["text"],
+            "highlightbackground": colours["bg"],
+            "font": ("Arial", 12),
+            "borderwidth": 0,
+            "activebackground": colours["but_bg"],
+            "activeforeground": colours["text"]
         }
     }
 
@@ -396,7 +405,6 @@ def displayGraph(fig):
 
 
 def openDatabaseWindow():
-
     def loadDatabaseMenuFrame():
         db_menu_frame = Frame(database_win, bg=colours["bg"])
         db_menu_frame.place(x=0, y=26, width=800, height=374)
@@ -485,8 +493,8 @@ def openDatabaseWindow():
         c.execute("SELECT name, drag FROM Presets")
         records = list(dict(c.fetchall()).keys())
 
-        preview_button = Button(db_view_frame, text="Preview", bg=colours["but_bg"], fg=colours["text"],
-                                command=previewRecord, borderwidth=0, disabledforeground=colours["text"])
+        preview_button = CustomButton(db_view_frame, **style["button"], text="Preview", command=previewRecord,
+                                      disabledforeground=colours["text"])
         preview_button.place(x=250, y=120)
         chosen_record = StringVar(database_win)
         chosen_record.set("Select Preset")
@@ -498,7 +506,7 @@ def openDatabaseWindow():
             menu = OptionMenu(db_view_frame, chosen_record, *records)
             menu.config(state="disabled", disabledforeground=colours["text"])
             preview_button.config(state="disabled")
-        menu.config(borderwidth=0, fg=colours["text"], bg=colours["but_bg"])
+        menu.config(**style["menu"], width=10)
         menu.place(x=100, y=120)
 
         Label(db_view_frame, **style["label 2"], text="v [m/s]:", anchor="e", width=10).place(x=120, y=170)
@@ -518,7 +526,7 @@ def openDatabaseWindow():
         g_label = Label(db_view_frame, **style["label 2"])
 
         for count, label in enumerate((v_label, ele_label, azi_label, x_label, y_label, z_label, g_label)):
-            label.place(x=200, y=170+count*20)
+            label.place(x=200, y=170 + count * 20)
 
         Label(db_view_frame, **style["label 2"], text="Drag:", anchor="e", width=10).place(x=350, y=170)
         Label(db_view_frame, **style["label 2"], text="m [kg]:", anchor="e", width=10).place(x=350, y=190)
@@ -533,7 +541,7 @@ def openDatabaseWindow():
         a_label = Label(db_view_frame, **style["label 2"])
 
         for count, label in enumerate((drag_label, m_label, rho_label, cd_label, a_label)):
-            label.place(x=430, y=170+count*20)
+            label.place(x=430, y=170 + count * 20)
 
         CustomButton(db_view_frame, **style["button"], text="Load", width=10, command=loadRecord).place(x=600, y=220)
         Button(db_view_frame, **style["neg button"], text="Delete", width=10, command=deleteRecord).place(x=600, y=270)
@@ -656,7 +664,7 @@ def openDatabaseWindow():
         Label(db_save_frame, **style["label"], text="Name:").place(relx=0.5, y=150, anchor=CENTER)
         Entry(db_save_frame, **style["entry"], textvariable=new_preset).place(relx=0.5, y=175, anchor=CENTER)
         Button(db_save_frame, **style["pos button"], text="Save Preset",
-                     command=saveRecord).place(relx=0.5, y=225, anchor=CENTER)
+               command=saveRecord).place(relx=0.5, y=225, anchor=CENTER)
 
     database_win = Toplevel(root)
     database_win.resizable(False, False)
@@ -706,7 +714,6 @@ FOREIGN KEY (PID) REFERENCES Projectiles (PID),
 FOREIGN KEY (MID) REFERENCES Motion (MID))""")
 db.commit()  # Saves any changes
 
-
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 root = Tk()
@@ -719,7 +726,7 @@ colours = {"neg": "#D62F2F", "pos": "#109110"}  # Stores the current theme
 colours.update(themes["Dark"])  # Sets the current theme to dark
 current_theme = StringVar(value="Dark")  # Variable to store the current theme
 colourblind_mode = BooleanVar(value=False)  # Boolean value for if colourblind mode is active
-style = loadTheme()
+style = loadTheme()  # Stores the style options for different widgets
 
 root.config(bg=colours["but_bg"])
 
@@ -727,7 +734,6 @@ root.config(bg=colours["but_bg"])
 input_frame = Frame(root)
 output_frame = Frame(root)
 graph_frame = Frame(root)
-
 
 drag = False
 # Inputs

@@ -68,3 +68,5 @@
 21-12-2023 20:09:17: Moved fig and dt outside of selection
 21-12-2023 20:12:18: Updated enable_compare to disable/enable drag_button
 21-12-2023 22:01:39: Added messages confirming presets successfully saved/deleted
+21-12-2023 22:08:34: Added style for Menus
+21-12-2023 22:13:42: Updated widgets on db_view_frame to use styles
