@@ -414,6 +414,7 @@ def openDatabaseWindow():
             c.execute("DELETE FROM Presets WHERE name=?", [record_name])
             db.commit()
             records.remove(record_name)
+            messagebox.showinfo("Preset Deleted", "Preset successfully deleted")
 
         def loadRecord():
             global drag
@@ -643,6 +644,7 @@ def openDatabaseWindow():
                 c.execute("INSERT INTO Presets (name,drag,EID,PID,MID) VALUES (?,?,?,?,?)",
                           (new_preset.get(), drag, eid, pid, mid))
                 db.commit()
+                messagebox.showinfo("Preset Saved", "Preset successfully saved")
             else:
                 messagebox.showerror("Error", f"Invalid value/s: record already exists under '{repeats[0][0]}'")
                 return

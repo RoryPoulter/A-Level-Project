@@ -67,3 +67,4 @@
 21-12-2023 19:48:45: Added if statement to function run to check if compare_drag is true
 21-12-2023 20:09:17: Moved fig and dt outside of selection
 21-12-2023 20:12:18: Updated enable_compare to disable/enable drag_button
+21-12-2023 22:01:39: Added messages confirming presets successfully saved/deleted
