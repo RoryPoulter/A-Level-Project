@@ -103,6 +103,14 @@ def loadToolsFrame():
 
 
 def loadInputFrame():
+    def enable_compare():
+        if not drag:
+            toggle()
+        if compare_drag.get():
+            drag_button.config(state="disabled")
+        else:
+            drag_button.config(state="normal")
+
     def toggle():
         global drag
         if not drag:
@@ -162,6 +170,9 @@ def loadInputFrame():
             HintLabel(input_frame, text=(line.strip()).replace(";", "\n"), bg=colours["but_bg"],
                       fg=colours["text"], width=2).place(x=330, y=40 * x + 20)
 
+    Checkbutton(input_frame, **style["checkbutton"], text="Compare Drag", variable=compare_drag,
+                command=enable_compare).place(x=300, y=480)
+
 
 def loadOutputFrame():
     output_frame.config(bg=colours["bg"])
@@ -210,9 +221,7 @@ def loadSettingsFrame(win: Toplevel):
                 font=("Calibri", 12), width=10, activeforeground=colours["text"], activebackground=colours["but_bg"])
     menu.place(x=120, y=70)
 
-    Checkbutton(settings_frame, text="Colourblind Mode", variable=colourblind_mode,
-                bg=colours["bg"], activebackground=colours["bg"],
-                activeforeground=colours["text"], font=("Calibri", 16)).place(x=50, y=120)
+    Checkbutton(settings_frame, **style["checkbutton"], text="Colourblind Mode", variable=colourblind_mode).place(x=50, y=120)
 
     Button(settings_frame, bg=colours["but_bg"], fg=colours["text"], text="Confirm", command=updateScheme,
            borderwidth=0).pack(anchor="s", side=RIGHT)
@@ -277,7 +286,7 @@ def loadTheme():
             "fg": colours["text"],
             "font": ("Arial", 14)
         },
-        "label 2":{
+        "label 2": {
             "bg": colours["bg"],
             "fg": colours["text"],
             "font": ("Arial", 9)
@@ -287,6 +296,14 @@ def loadTheme():
             "fg": colours["text"],
             "font": ("Arial", 14),
             "borderwidth": 0
+        },
+        "checkbutton": {
+            "bg": colours["bg"],
+            "fg": colours["text"],
+            "font": ("Arial", 14),
+            "activeforeground": colours["text"],
+            "activebackground": colours["bg"],
+            "selectcolor": colours["but_bg"]
         }
     }
 
@@ -332,32 +349,42 @@ def run():
     if not valid:
         return
 
-    # Creates the objects using the values
-    if drag:
-        proj = projectile.ProjectileDrag(*values, colour=colours["pos"])
-    else:
-        proj = projectile.ProjectileNoDrag(*values, colour=colours["neg"])
     dt = 0.01
-    # Updates the position until it is on the ground
-    while proj.pos[2] >= 0:
-        proj.move(dt)
-
-    if drag:
-        position.set(", ".join(str(round(x, 5)) for x in proj.pos))
-        landing_time.set(str(round(proj.time, 5)))
-    else:
-        position.set(", ".join(str(round(x, 5)) for x in proj.landing_pos))
-        landing_time.set(str(round(proj.landing_time, 5)))
-    velocity.set(str(round(projectile.mag(proj.v), 5)))
-    displacement.set(str(round(proj.calcDisplacement(), 5)))
-    max_height.set(str(round(proj.max_h, 5)))
-    time.set(str(round(proj.max_t, 5)))
-    loadOutputFrame()
-
     fig = plt.figure()
-    # Loads the 3D scatter graph
-    ax = proj.displayPath(fig)
-    displayGraph(fig)
+    if not compare_drag.get():
+        # Creates the objects using the values
+        if drag:
+            proj = projectile.ProjectileDrag(*values, colour=colours["pos"])
+        else:
+            proj = projectile.ProjectileNoDrag(*values, colour=colours["neg"])
+        # Updates the position until it is on the ground
+        while proj.pos[2] >= 0:
+            proj.move(dt)
+
+        if drag:
+            position.set(", ".join(str(round(x, 5)) for x in proj.pos))
+            landing_time.set(str(round(proj.time, 5)))
+        else:
+            position.set(", ".join(str(round(x, 5)) for x in proj.landing_pos))
+            landing_time.set(str(round(proj.landing_time, 5)))
+        velocity.set(str(round(projectile.mag(proj.v), 5)))
+        displacement.set(str(round(proj.calcDisplacement(), 5)))
+        max_height.set(str(round(proj.max_h, 5)))
+        time.set(str(round(proj.max_t, 5)))
+        loadOutputFrame()
+
+        ax = proj.displayPath(fig)  # Creates the graph
+
+    else:
+        proj_1 = projectile.ProjectileDrag(*values, colour=colours["pos"])  # Projectile with drag
+        proj_2 = projectile.ProjectileNoDrag(*values[:7], colour=colours["neg"])  # Projectile without drag
+
+        for proj in (proj_1, proj_2):  # Iterates over each projectile
+            while proj.pos[2] >= 0:  # Iterates while the projectile os above the ground
+                proj.move(dt)
+
+        ax = projectile.compare_paths(proj_1, proj_2, fig)  # Creates the graph with both projectiles
+    displayGraph(fig)  # Displays the graph
 
 
 def displayGraph(fig):
@@ -713,6 +740,7 @@ mass = StringVar()
 air_density = StringVar()
 drag_coefficient = StringVar()
 surface_area = StringVar()
+compare_drag = BooleanVar(value=False)
 
 # Results
 position = StringVar(value="__________, __________, __________")

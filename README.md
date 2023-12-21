@@ -11,7 +11,7 @@ pip install -r /path/to/requiremnets.txt
 ## Usage
 This program allows the user to simulate projectile motion based on chosen initial conditions.
 Includes definitions of key terms which are read from an external .txt file.
-The effects of drag can be included/excluded to show how it affects a projectile.
+The effects of drag can be included/excluded, or both to show how it affects a projectile.
 
 The program uses tkinter for the main GUI, and matplotlib to display the results. 
 The appearance of the GUI can be changed by toggling colourblind mode and changing the theme.
@@ -35,5 +35,4 @@ Currently in development.
 Future updates will include:
 <ul>
     <li>Additional themes
-    <li>Compare with/without drag
 </ul>

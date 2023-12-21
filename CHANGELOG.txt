@@ -62,3 +62,8 @@
 20-12-2023 09:55:06: Fixed issue with saving presets where value for gravity was value for drag
 20-12-2023 14:32:09: Fixed issue when loading/previewing presets
 20-12-2023 23:34:34: Database and settings windows open in middle of screen
+21-12-2023 18:02:38: Created style for Checkbuttons
+21-12-2023 19:33:49: Created function enable_compare to turn on drag when checkbutton is true
+21-12-2023 19:48:45: Added if statement to function run to check if compare_drag is true
+21-12-2023 20:09:17: Moved fig and dt outside of selection
+21-12-2023 20:12:18: Updated enable_compare to disable/enable drag_button
