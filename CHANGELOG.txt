@@ -70,3 +70,6 @@
 21-12-2023 22:01:39: Added messages confirming presets successfully saved/deleted
 21-12-2023 22:08:34: Added style for Menus
 21-12-2023 22:13:42: Updated widgets on db_view_frame to use styles
+22-12-2023 01:02:49: Improved speed of changing theme by moving frame instantiations into functions
+26-12-2023 18:35:38: Added docstrings to every function in main.py
+26-12-2023 18:38:21: Removed unused import from projectile.py, added missing docstring from ProjectileNoDrag

@@ -1,54 +1,105 @@
-from tkinter import *
-from tkinter import messagebox
-import json
-import projectile
-import sqlite3
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.pyplot as plt
+from tkinter import *  # GUI
+from tkinter import messagebox  # Error messages
+import json  # Themes
+import projectile  # Projectile calculations
+import sqlite3  # Database
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embedding the graph
+import matplotlib.pyplot as plt  # Graph
 import ctypes
 
 
 class HintLabel(Label):
     def __init__(self, *args, **kwargs):
+        """
+        Label subclass which displays a ? and frame when hovered over
+        """
         Label.__init__(self, *args, **kwargs)
-        definition = self["text"]
-        self["text"] = "?"
-        self["font"] = ("Arial", 8, "bold")
-        self.bind("<Enter>", self.on_enter)
-        self.bind("<Leave>", self.on_leave)
+        definition = self["text"]  # Stores the definition as a separate variable
+        self["text"] = "?"  # Sets the text as "?"
+        self["font"] = ("Arial", 8, "bold")  # Sets the font to bold 8pt Arial
+        self.bind("<Enter>", self.on_enter)  # Binds the method on_enter when cursor enters label
+        self.bind("<Leave>", self.on_leave)  # Binds the method on_leave when cursor leaves label
 
-        self.frame = Frame(self.master, bg=colours["but_bg"])
+        self.frame = Frame(self.master, bg=colours["but_bg"])  # Creates frame for the definition
 
+        # Label with the definition
         Label(self.frame, text=definition, bg=colours["but_bg"], fg=colours["text"], font=("Arial", 14)).pack()
 
     def on_enter(self, e):
-        self.frame.place(x=self.winfo_x() + 50, y=self.winfo_y())
+        """
+        Places the frame when the cursor hovers over the label
+        """
+        self.frame.place(x=self.winfo_x() + 50, y=self.winfo_y())  # Places the frame
 
     def on_leave(self, e):
-        self.frame.place_forget()
+        """
+        Removes the frame when the cursor leaves the label
+        """
+        self.frame.place_forget()  # Removes the frame
 
 
 class CustomButton(Button):
     def __init__(self, master, hover_background, hover_foreground, *args, **kwargs):
+        """
+        Button subclass which changes colours when cursor hovers over it
+        :param hover_background: Background colour when cursor is above button
+        :type hover_background: str
+        :param hover_foreground: Foreground colour when cursor is above button
+        :type hover_foreground: str
+        """
         Button.__init__(self, master, *args, **kwargs)
-        self["borderwidth"] = 0
-        self["font"] = ("Arail", 14)
+        self["borderwidth"] = 0  # Sets the border width to 0
+        self["font"] = ("Arail", 14)  # Sets the font to 14pt Arial
         self.hover_bg = hover_background
         self.hover_fg = hover_foreground
         self.bg = self["bg"]
         self.fg = self["fg"]
-        self.bind("<Enter>", self.on_enter)
-        self.bind("<Leave>", self.on_leave)
+        self.bind("<Enter>", self.on_enter)  # Binds the method on_enter when cursor enters label
+        self.bind("<Leave>", self.on_leave)  # Binds the method on_leave when cursor leaves label
 
     def on_enter(self, e):
-        self.config(bg=self.hover_bg, fg=self.hover_fg)
+        """
+        Changes the colour of the button when hovered over
+        """
+        self.config(bg=self.hover_bg, fg=self.hover_fg)  # Changes the colour
 
     def on_leave(self, e):
-        self.config(bg=self.bg, fg=self.fg)
+        """
+        Changes colour back to original when cursor leaves
+        """
+        self.config(bg=self.bg, fg=self.fg)  # Changes the colour
 
 
-def verifyInputs(u: float, ele_angle: float, azi_angle: float, x: float, y: float, z: float, g: float, drag=False,
-                 m: float = None, rho: float = None, cd: float = None, area: float = None) -> bool:
+def verifyInputs(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=None, cd=None, area=None):
+    """
+    Checks if the values fall within the correct ranges
+    :param u: initial velocity
+    :type u: int | float
+    :param ele_angle: elevation angle
+    :type ele_angle: int | float
+    :param azi_angle: azimuth angle
+    :type azi_angle: int | float
+    :param x: initial x coordinate
+    :type x: int | float
+    :param y: initial y coordinate
+    :type y: int | float
+    :param z: initial z coordinate
+    :type z: int | float
+    :param g: gravitational field strength
+    :type g: int | float
+    :param drag: boolean value for if drag is included
+    :type drag: bool
+    :param m: mass
+    :type m: int | float
+    :param rho: air density
+    :type rho: int | float
+    :param cd: drag coefficient
+    :type cd: int | float
+    :param area: surface area
+    :type area: int | float
+    :return: True if all values are valid, False if not
+    :rtype: bool
+    """
     if u <= 0:
         messagebox.showerror("Error", "Invalid input: velocity must fall within the range: 0 < u")
         return False
@@ -89,6 +140,9 @@ def verifyInputs(u: float, ele_angle: float, azi_angle: float, x: float, y: floa
 
 
 def loadToolsFrame():
+    """
+    Loads the toolbar
+    """
     tools_frame = Frame(bg=colours["bg"])
     tools_frame.place(x=0, y=0, width=1920, height=40)
 
@@ -103,7 +157,13 @@ def loadToolsFrame():
 
 
 def loadInputFrame():
+    """
+    Loads the input frame
+    """
     def enable_compare():
+        """
+        Toggles whether drag is compared
+        """
         if not drag:
             toggle()
         if compare_drag.get():
@@ -112,6 +172,9 @@ def loadInputFrame():
             drag_button.config(state="normal")
 
     def toggle():
+        """
+        Toggles whether drag is included
+        """
         global drag
         if not drag:
             drag_button.config(text="Drag", bg=colours["pos"])
@@ -125,7 +188,8 @@ def loadInputFrame():
 
         drag = not drag
 
-    input_frame.config(bg=colours["bg"])
+    input_frame = Frame(root, bg=colours["bg"])
+    # input_frame.config(bg=colours["bg"])
     input_frame.place(x=0, y=41, width=899, height=550)
 
     Label(input_frame, **style["label"], text="Velocity [m/s]:").place(x=20, y=20)
@@ -175,7 +239,11 @@ def loadInputFrame():
 
 
 def loadOutputFrame():
-    output_frame.config(bg=colours["bg"])
+    """
+    Loads the output frame
+    """
+    output_frame = Frame(root, bg=colours["bg"])
+    # output_frame.config()
     output_frame.place(x=0, y=592, width=899, height=488)
 
     Label(output_frame, **style["label"], text="Final Velocity [m/s]:", anchor="e", width=15).place(x=20, y=20)
@@ -194,12 +262,18 @@ def loadOutputFrame():
 
 
 def loadGraphFrame():
+    """
+    Loads the graph frame
+    """
     # global display_frame
     graph_frame.config(bg=colours["bg"]),
     graph_frame.place(x=900, y=41, width=1020, height=1039)
 
 
 def openSettingsWindow():
+    """
+    Opens the settings window
+    """
     global settings_win
     settings_win = Toplevel(root)
     settings_win.resizable(False, False)  # Keeps window the same size
@@ -209,7 +283,12 @@ def openSettingsWindow():
     loadSettingsFrame(settings_win)
 
 
-def loadSettingsFrame(win: Toplevel):
+def loadSettingsFrame(win):
+    """
+    Loads the widgets on the settings window
+    :param win: The toplevel window
+    :type win: Toplevel
+    """
     settings_frame = Frame(win, bg=colours["bg"])
     settings_frame.place(x=0, y=0, width=400, height=250)
 
@@ -228,6 +307,9 @@ def loadSettingsFrame(win: Toplevel):
 
 
 def updateScheme():
+    """
+    Updates the dictionary colours with the new theme
+    """
     global style
     colours.update(themes[current_theme.get()])  # Updates the colours dictionary with the values of the chosen theme
 
@@ -241,6 +323,9 @@ def updateScheme():
 
 
 def loadFrames():
+    """
+    Loads all the frames and the settings window with the new colours
+    """
     root.config(bg=colours["but_bg"])
     loadToolsFrame()
     loadSettingsFrame(settings_win)
@@ -250,6 +335,11 @@ def loadFrames():
 
 
 def loadTheme():
+    """
+    Creates a dictionary storing the appearance options for different TKinter widgets using the chosen theme
+    :return: a dictionary storing the appearance options for different TKinter widgets
+    :rtype: dict[dict[str | int | tuple[str, int]]]
+    """
     style = {
         "button": {
             "bg": colours["but_bg"],
@@ -320,6 +410,9 @@ def loadTheme():
 
 
 def run():
+    """
+    Runs the simulation using the provided inputs
+    """
     # Stores all inputs as a list
     values = [
         initial_velocity.get(),
@@ -397,6 +490,10 @@ def run():
 
 
 def displayGraph(fig):
+    """
+    Displays the graph on the graph frame
+    :param fig: matplotlib figure
+    """
     display_frame = Frame(graph_frame, bg=colours["but_bg"])
     display_frame.place(x=25, y=25, width=970, height=970)
     canvas = FigureCanvasTkAgg(fig, master=display_frame)  # A tk.DrawingArea.
@@ -405,7 +502,13 @@ def displayGraph(fig):
 
 
 def openDatabaseWindow():
+    """
+    Opens the database window
+    """
     def loadDatabaseMenuFrame():
+        """
+        Loads the menu frame
+        """
         db_menu_frame = Frame(database_win, bg=colours["bg"])
         db_menu_frame.place(x=0, y=26, width=800, height=374)
         Label(db_menu_frame, **style["label"], text="Manage Presets").place(relx=0.5, y=50, anchor=CENTER)
@@ -415,7 +518,13 @@ def openDatabaseWindow():
                      command=loadDatabaseViewFrame).place(x=550, y=250, anchor=CENTER)
 
     def loadDatabaseViewFrame():
+        """
+        Loads the view frame to view, load, and delete presets
+        """
         def deleteRecord():
+            """
+            Deletes a specified record from the database
+            """
             record_name = chosen_record.get()
             if record_name == "Select Preset" or record_name == "No Presets":
                 return
@@ -425,6 +534,9 @@ def openDatabaseWindow():
             messagebox.showinfo("Preset Deleted", "Preset successfully deleted")
 
         def loadRecord():
+            """
+            Loads a specified record from the database to the main window
+            """
             global drag
             record_name = chosen_record.get()
             if record_name == "Select Preset" or record_name == "No Presets":
@@ -440,7 +552,8 @@ def openDatabaseWindow():
             record = c.fetchall()[0]
             drag = bool(record[8])
 
-            for value, variable in zip(record[:7], [initial_velocity, elevation_angle, azimuth_angle, x0, y0, z0, gravity]):
+            for value, variable in zip(record[:7],
+                                       [initial_velocity, elevation_angle, azimuth_angle, x0, y0, z0, gravity]):
                 variable.set(value=value)
 
             if drag:
@@ -450,6 +563,9 @@ def openDatabaseWindow():
             loadInputFrame()
 
         def previewRecord():
+            """
+            Loads a specified record from the database to the view frame to be previewed
+            """
             record_name = chosen_record.get()
             if record_name == "Select Preset":
                 return
@@ -547,7 +663,13 @@ def openDatabaseWindow():
         Button(db_view_frame, **style["neg button"], text="Delete", width=10, command=deleteRecord).place(x=600, y=270)
 
     def loadDatabaseSaveFrame():
+        """
+        Loads the save frame to save new presets
+        """
         def saveRecord():
+            """
+            Saves a new preset to the database using values from the main window
+            """
             # Checks if name is unique
             c.execute("SELECT name FROM Presets WHERE name=?", [new_preset.get()])
             records = c.fetchall()
@@ -730,9 +852,6 @@ style = loadTheme()  # Stores the style options for different widgets
 
 root.config(bg=colours["but_bg"])
 
-# tools_frame = Frame(root)
-input_frame = Frame(root)
-output_frame = Frame(root)
 graph_frame = Frame(root)
 
 drag = False
@@ -758,9 +877,9 @@ landing_time = StringVar(value="__________")
 max_height = StringVar(value="__________")
 time = StringVar(value="__________")
 
-loadToolsFrame()
-loadInputFrame()
-loadOutputFrame()
-loadGraphFrame()
+loadToolsFrame()  # Loads the tool frame
+loadInputFrame()  # Loads the input frame
+loadOutputFrame()  # Loads the results frame
+loadGraphFrame()  # Loads the graph frame
 
-root.mainloop()
+root.mainloop()  # Keeps the window open
