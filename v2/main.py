@@ -326,7 +326,7 @@ def loadFrames():
     """
     Loads all the frames and the settings window with the new colours
     """
-    root.config(bg=colours["but_bg"])
+    root.config(bg=colours["accent"])
     loadToolsFrame()
     loadSettingsFrame(settings_win)
     loadInputFrame()
@@ -338,7 +338,7 @@ def loadTheme():
     """
     Creates a dictionary storing the appearance options for different TKinter widgets using the chosen theme
     :return: a dictionary storing the appearance options for different TKinter widgets
-    :rtype: dict[dict[str | int | tuple[str, int]]]
+    :rtype: dict[str, dict[str | int| tuple[str, int]]]
     """
     style = {
         "button": {
@@ -346,13 +346,13 @@ def loadTheme():
             "fg": colours["text"],
             "borderwidth": 0,
             "font": ("Arial", 14),
-            "hover_background": colours["bg"],
+            "hover_background": colours["accent"],
             "hover_foreground": colours["text"]
         },
         "tool button": {
             "bg": colours["bg"],
             "fg": colours["text"],
-            "hover_background": colours["but_bg"],
+            "hover_background": colours["accent"],
             "hover_foreground": colours["text"],
             "activebackground": colours["bg"],
             "activeforeground": colours["text"],
@@ -393,7 +393,7 @@ def loadTheme():
             "font": ("Arial", 14),
             "activeforeground": colours["text"],
             "activebackground": colours["bg"],
-            "selectcolor": colours["but_bg"]
+            "selectcolor": colours["accent"]
         },
         "menu": {
             "bg": colours["but_bg"],
@@ -850,7 +850,7 @@ current_theme = StringVar(value="Dark")  # Variable to store the current theme
 colourblind_mode = BooleanVar(value=False)  # Boolean value for if colourblind mode is active
 style = loadTheme()  # Stores the style options for different widgets
 
-root.config(bg=colours["but_bg"])
+root.config(bg=colours["accent"])
 
 graph_frame = Frame(root)
 
