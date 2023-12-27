@@ -70,7 +70,38 @@ class CustomButton(Button):
         self.config(bg=self.bg, fg=self.fg)  # Changes the colour
 
 
-def verifyInputs(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=None, cd=None, area=None):
+def verifyInputs(values):
+    """
+    Checks if the inputs are valid
+    :param values: list of all the inputs
+    :type values: list[int | float | bool | None]
+    :return: whether values are valid; True for yes, False for no
+    :rtype: bool
+    """
+    # Checks for empty values
+    if "" in values:
+        messagebox.showerror("Error", "Empty fields")
+        return False
+
+    # Checks for string inputs
+    try:
+        if drag:
+            values = list(map(float, values))
+        else:
+            values[0:7] = list(map(float, values[0:7]))
+    except ValueError:
+        messagebox.showerror("Error", "Inputs must be numbers")
+        return False
+
+    # Passes the values into the function verifyRanges to check if values are within range
+    valid = verifyRanges(*values)
+    if not valid:
+        return False
+
+    return True  # If all checks are passed
+
+
+def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=None, cd=None, area=None):
     """
     Checks if the values fall within the correct ranges
     :param u: initial velocity
@@ -421,7 +452,8 @@ def run():
         x0.get(),
         y0.get(),
         z0.get(),
-        gravity.get()
+        gravity.get(),
+        drag
     ]
     if drag:
         values += [
@@ -431,25 +463,10 @@ def run():
             surface_area.get()
         ]
 
-    # Checks for any empty fields
-    if "" in values:
-        messagebox.showerror("Error", "Empty fields")
-        return
-    # Checks for invalid inputs
-    try:
-        values = list(map(float, values))
-    except ValueError:
-        messagebox.showerror("Error", "Inputs must be numbers")
-        return
-
-    # Passes the values into the function verifyInputs to check validity
-    if drag:
-        valid = verifyInputs(*values[0:6], drag, *values[6:])
-    else:
-        valid = verifyInputs(*values)
-
+    valid = verifyInputs(values)  # Checks if the inputs are valid
     if not valid:
         return
+    values.pop(7)  # Removes the value for drag
 
     dt = 0.01
     fig = plt.figure()
@@ -478,14 +495,14 @@ def run():
         ax = proj.displayPath(fig)  # Creates the graph
 
     else:
-        proj_1 = projectile.ProjectileDrag(*values, colour=colours["pos"])  # Projectile with drag
-        proj_2 = projectile.ProjectileNoDrag(*values[:7], colour=colours["neg"])  # Projectile without drag
+        proj_drag = projectile.ProjectileDrag(*values, colour=colours["pos"])  # Projectile with drag
+        proj_no_drag = projectile.ProjectileNoDrag(*values[:7], colour=colours["neg"])  # Projectile without drag
 
-        for proj in (proj_1, proj_2):  # Iterates over each projectile
-            while proj.pos[2] >= 0:  # Iterates while the projectile os above the ground
+        for proj in (proj_drag, proj_no_drag):  # Iterates over each projectile
+            while proj.pos[2] >= 0:  # Iterates while the projectile is above the ground
                 proj.move(dt)
 
-        ax = projectile.compare_paths(proj_1, proj_2, fig)  # Creates the graph with both projectiles
+        ax = projectile.compare_paths(proj_drag, proj_no_drag, fig)  # Creates the graph with both projectiles
     displayGraph(fig)  # Displays the graph
 
 
@@ -702,23 +719,7 @@ def openDatabaseWindow():
             else:
                 values += [None] * 4
 
-            # Checks for any empty fields
-            if "" in values:
-                messagebox.showerror("Error", "Empty fields")
-                return
-
-            # Checks for invalid inputs
-            try:
-                if drag:
-                    values = list(map(float, values))
-                else:
-                    values[0:7] = list(map(float, values[0:7]))
-            except ValueError:
-                messagebox.showerror("Error", "Inputs must be numbers")
-                return
-
-            # Passes the values into the function verifyInputs to check validity
-            valid = verifyInputs(*values)
+            valid = verifyInputs(values)  # Checks if the inputs are valid
             if not valid:
                 return
 

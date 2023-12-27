@@ -75,3 +75,4 @@
 26-12-2023 18:38:21: Removed unused import from projectile.py, added missing docstring from ProjectileNoDrag
 26-12-2023 19:54:34: Fixed issue with return type in docstring of loadTheme
 27-12-2023 13:15:55: Added new colour to each theme, added new theme "Forest"
+27-12-2023 23:37:49: Added new function "verifyInputs" to check for empty values, string inputs, and out-of-range values
