@@ -85,10 +85,9 @@ def verifyInputs(values):
 
     # Checks for string inputs
     try:
+        values[0:7] = list(map(float, values[0:7]))
         if drag:
-            values = list(map(float, values))
-        else:
-            values[0:7] = list(map(float, values[0:7]))
+            values[8:] = list(map(float, values[8:]))
     except ValueError:
         messagebox.showerror("Error", "Inputs must be numbers")
         return False
@@ -728,53 +727,18 @@ def openDatabaseWindow():
             projectile_record = values[9:]
 
             # Finds environment id
-            c.execute("SELECT EID FROM Environments WHERE (gravity,air_density) IS (?,?)",
-                      environment_record)
-            eid = c.fetchall()
-            if not eid:
-                c.execute("INSERT INTO Environments (gravity,air_density) VALUES (?,?)",
-                          tuple(environment_record))
-                db.commit()
-                c.execute("SELECT EID FROM Environments WHERE (gravity,air_density) IS (?,?)",
-                          environment_record)
-                eid = c.fetchall()[0][0]
-            else:
-                eid = eid[0][0]
+            eid = duplicateCheck("EID", "Environments", "gravity,air_density", environment_record)
 
             # Finds projectile id
-            c.execute("SELECT PID FROM Projectiles WHERE (mass,drag_coefficient,area) IS (?,?,?)",
-                      projectile_record)
-            pid = c.fetchall()
-            if not pid:
-                c.execute("INSERT INTO Projectiles (mass,drag_coefficient,area) VALUES (?,?,?)",
-                          tuple(projectile_record))
-                db.commit()
-                c.execute("SELECT PID FROM Projectiles WHERE (mass,drag_coefficient,area) IS (?,?,?)",
-                          projectile_record)
-                pid = c.fetchall()[0][0]
-            else:
-                pid = pid[0][0]
+            pid = duplicateCheck("PID", "Projectiles", "mass,drag_coefficient,area", projectile_record)
 
             # Finds motion id
-            c.execute("SELECT MID FROM Motion WHERE (velocity,ele_angle,azi_angle,x,y,z) IS (?,?,?,?,?,?)",
-                      motion_record)
-            mid = c.fetchall()
-            if not mid:
-                c.execute("INSERT INTO Motion (velocity,ele_angle,azi_angle,x,y,z) VALUES (?,?,?,?,?,?)",
-                          tuple(motion_record))
-                db.commit()
-                c.execute("SELECT MID FROM Motion WHERE (velocity,ele_angle,azi_angle,x,y,z) IS (?,?,?,?,?,?)",
-                          motion_record)
-                mid = c.fetchall()[0][0]
-            else:
-                mid = mid[0][0]
+            mid = duplicateCheck("MID", "Motion", "velocity,ele_angle,azi_angle,x,y,z", motion_record)
 
-            c.execute("SELECT name FROM Presets WHERE (EID,PID,MID)=(?,?,?)", [eid, pid, mid])
-            repeats = c.fetchall()
+            # c.execute("SELECT name FROM Presets WHERE (EID,PID,MID)=(?,?,?)", [eid, pid, mid])
+            repeats = selectRecord("name", "Presets", "EID,PID,MID", [eid, pid, mid])
             if not repeats:
-                c.execute("INSERT INTO Presets (name,drag,EID,PID,MID) VALUES (?,?,?,?,?)",
-                          (new_preset.get(), drag, eid, pid, mid))
-                db.commit()
+                insertRecord("Presets", "name,drag,EID,PID,MID", [new_preset.get(), drag, eid, pid, mid])
                 messagebox.showinfo("Preset Saved", "Preset successfully saved")
             else:
                 messagebox.showerror("Error", f"Invalid value/s: record already exists under '{repeats[0][0]}'")
@@ -799,6 +763,64 @@ def openDatabaseWindow():
     Button(db_tool_frame, text="X", bg=colours["neg"], fg="#FFFFFF", borderwidth=0,
            font=("Calibri", 16), command=loadDatabaseMenuFrame).pack(anchor="e")
     loadDatabaseMenuFrame()
+
+
+def insertRecord(table, fields, values):
+    """
+    Runs an SQL query to insert values into a given table
+    :param table: The table which the record will be inserted into
+    :type table: str
+    :param fields: The names of the fields in the table
+    :type fields: str
+    :param values: The values which will be inserted into the record
+    :type values: list
+    """
+    q_marks = "?," * len(fields.split(","))
+    values = tuple(values)
+    c.execute(f"INSERT INTO {table} ({fields}) VALUES ({q_marks[:~0]})", values)
+    db.commit()
+
+
+def selectRecord(field, table, fields, values):
+    """
+    Runs an SQL select query and returns the records
+    :param field: The field which the selected values belong to
+    :type field: str
+    :param table: The table which the record will be inserted into
+    :type table: str
+    :param fields: The names of the fields in the table
+    :type fields: str
+    :param values: The values which will be inserted into the record
+    :type values: list
+    :return: The records which match the chosen values
+    :rtype: list
+    """
+    q_marks = "?," * len(fields.split(","))
+    c.execute(f"SELECT {field} FROM {table} WHERE ({fields}) IS ({q_marks[:~0]})", values)
+    return c.fetchall()
+
+
+def duplicateCheck(field, table, fields, values):
+    """
+    Checks if the record exists; if not the record is inserted; returns the ID
+    :param field: The field which the selected values belong to
+    :type field: str
+    :param table: The table which the record will be inserted into
+    :type table: str
+    :param fields: The names of the fields in the table
+    :type fields: str
+    :param values: The values which will be inserted into the record
+    :type values: list
+    :return: the id
+    :rtype: int
+    """
+    ID = selectRecord(field, table, fields, values)
+    if not ID:
+        insertRecord(table, fields, values)
+        ID = selectRecord(field, table, fields, values)[0][0]
+    else:
+        ID = ID[0][0]
+    return ID
 
 
 # Database
