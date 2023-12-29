@@ -190,18 +190,19 @@ def loadInputFrame():
     """
     Loads the input frame
     """
-    def enable_compare():
+
+    def toggleComparison():
         """
         Toggles whether drag is compared
         """
         if not drag:
-            toggle()
+            toggleDrag()
         if compare_drag.get():
             drag_button.config(state="disabled")
         else:
             drag_button.config(state="normal")
 
-    def toggle():
+    def toggleDrag():
         """
         Toggles whether drag is included
         """
@@ -219,7 +220,6 @@ def loadInputFrame():
         drag = not drag
 
     input_frame = Frame(root, bg=colours["bg"])
-    # input_frame.config(bg=colours["bg"])
     input_frame.place(x=0, y=41, width=899, height=550)
 
     Label(input_frame, **style["label"], text="Velocity [m/s]:").place(x=20, y=20)
@@ -249,7 +249,7 @@ def loadInputFrame():
     a_entry = Entry(input_frame, **style["entry"], width=9, textvariable=surface_area)
     a_entry.place(x=200, y=420)
 
-    drag_button = Button(input_frame, **style["pos button"], text="Drag", width=10, command=toggle)
+    drag_button = Button(input_frame, **style["pos button"], text="Drag", width=10, command=toggleDrag)
     drag_button.place(x=20, y=480)
 
     if not drag:
@@ -259,13 +259,13 @@ def loadInputFrame():
 
     CustomButton(input_frame, **style["button"], text="Run", width=10, command=run).place(x=160, y=480)
 
-    with open("definitions.txt", "r", encoding="UTF-8") as file:
-        for x, line in enumerate(file):
+    with open("definitions.txt", "r", encoding="UTF-8") as definition_file:
+        for x, line in enumerate(definition_file):
             HintLabel(input_frame, text=(line.strip()).replace(";", "\n"), bg=colours["but_bg"],
                       fg=colours["text"], width=2).place(x=330, y=40 * x + 20)
 
     Checkbutton(input_frame, **style["checkbutton"], text="Compare Drag", variable=compare_drag,
-                command=enable_compare).place(x=300, y=480)
+                command=toggleComparison).place(x=300, y=480)
 
 
 def loadOutputFrame():
@@ -273,7 +273,6 @@ def loadOutputFrame():
     Loads the output frame
     """
     output_frame = Frame(root, bg=colours["bg"])
-    # output_frame.config()
     output_frame.place(x=0, y=592, width=899, height=488)
 
     Label(output_frame, **style["label"], text="Final Velocity [m/s]:", anchor="e", width=15).place(x=20, y=20)
@@ -295,7 +294,6 @@ def loadGraphFrame():
     """
     Loads the graph frame
     """
-    # global display_frame
     graph_frame.config(bg=colours["bg"]),
     graph_frame.place(x=900, y=41, width=1020, height=1039)
 
@@ -521,6 +519,7 @@ def openDatabaseWindow():
     """
     Opens the database window
     """
+
     def loadDatabaseMenuFrame():
         """
         Loads the menu frame
@@ -557,18 +556,11 @@ def openDatabaseWindow():
             record_name = chosen_record.get()
             if record_name == "Select Preset" or record_name == "No Presets":
                 return
-            c.execute("""SELECT Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
-                        Environments.gravity, Presets.drag, 
-                        Environments.air_density,
-                        Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
-                        FROM Motion, Environments, Presets, Projectiles 
-                        WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
-                        Presets.name=?""",
-                      [record_name])
-            record = c.fetchall()[0]
-            drag = bool(record[8])
 
-            for value, variable in zip(record[:7],
+            record = selectPreset(record_name)
+            drag = bool(record[0])
+
+            for value, variable in zip(record[1:8],
                                        [initial_velocity, elevation_angle, azimuth_angle, x0, y0, z0, gravity]):
                 variable.set(value=value)
 
@@ -585,28 +577,21 @@ def openDatabaseWindow():
             record_name = chosen_record.get()
             if record_name == "Select Preset":
                 return
-            c.execute("""SELECT Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
-            Environments.gravity, Environments.air_density,
-            Presets.drag, 
-            Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
-            FROM Motion, Environments, Presets, Projectiles 
-            WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
-            Presets.name=?""",
-                      [record_name])
-            record = c.fetchall()[0]
-            record_drag = bool(record[8])
-            v_label.config(text=record[0])
-            ele_label.config(text=record[1])
-            azi_label.config(text=record[2])
-            x_label.config(text=record[3])
-            y_label.config(text=record[4])
-            z_label.config(text=record[5])
-            g_label.config(text=record[6])
+
+            record = selectPreset(record_name)
+            record_drag = bool(record[0])
+            v_label.config(text=record[1])
+            ele_label.config(text=record[2])
+            azi_label.config(text=record[3])
+            x_label.config(text=record[4])
+            y_label.config(text=record[5])
+            z_label.config(text=record[6])
+            g_label.config(text=record[7])
 
             if record_drag:
                 drag_label.config(text="True")
                 m_label.config(text=record[9])
-                rho_label.config(text=record[7])
+                rho_label.config(text=record[8])
                 cd_label.config(text=record[10])
                 a_label.config(text=record[11])
             else:
@@ -682,13 +667,13 @@ def openDatabaseWindow():
         """
         Loads the save frame to save new presets
         """
+
         def saveRecord():
             """
             Saves a new preset to the database using values from the main window
             """
             # Checks if name is unique
-            c.execute("SELECT name FROM Presets WHERE name=?", [new_preset.get()])
-            records = c.fetchall()
+            records = selectRecord("name", "Presets", "name", [new_preset.get()])
             if records:  # Checks if name is unique
                 messagebox.showerror("Error", "Invalid input: name already in use")
                 return
@@ -765,6 +750,7 @@ def openDatabaseWindow():
     loadDatabaseMenuFrame()
 
 
+# Database functions
 def insertRecord(table, fields, values):
     """
     Runs an SQL query to insert values into a given table
@@ -776,7 +762,7 @@ def insertRecord(table, fields, values):
     :type values: list
     """
     q_marks = "?," * len(fields.split(","))
-    values = tuple(values)
+    values = tuple(values)  # Casts list as tuple
     c.execute(f"INSERT INTO {table} ({fields}) VALUES ({q_marks[:~0]})", values)
     db.commit()
 
@@ -802,7 +788,7 @@ def selectRecord(field, table, fields, values):
 
 def duplicateCheck(field, table, fields, values):
     """
-    Checks if the record exists; if not the record is inserted; returns the ID
+    Checks if the record exists; if not the record is inserted; returns the primary key
     :param field: The field which the selected values belong to
     :type field: str
     :param table: The table which the record will be inserted into
@@ -814,13 +800,32 @@ def duplicateCheck(field, table, fields, values):
     :return: the id
     :rtype: int
     """
-    ID = selectRecord(field, table, fields, values)
-    if not ID:
+    primary_key = selectRecord(field, table, fields, values)
+    if not primary_key:
         insertRecord(table, fields, values)
-        ID = selectRecord(field, table, fields, values)[0][0]
+        primary_key = selectRecord(field, table, fields, values)[0][0]
     else:
-        ID = ID[0][0]
-    return ID
+        primary_key = primary_key[0][0]
+    return primary_key
+
+
+def selectPreset(name):
+    """
+    Selects the preset from the database
+    :param name: The name (primary key) of the preset
+    :type name: str
+    :return: The values from the preset
+    :rtype: tuple
+    """
+    c.execute("""SELECT Presets.drag, 
+    Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
+    Environments.gravity, Environments.air_density,
+    Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
+    FROM Motion, Environments, Presets, Projectiles 
+    WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
+    Presets.name=?""",
+              [name])
+    return c.fetchall()[0]
 
 
 # Database
@@ -865,8 +870,8 @@ root = Tk()
 root.title("Projectile Simulator")
 root.attributes("-fullscreen", True)
 
-with open("themes.json", "r") as file:  # Opens the JSON file
-    themes = json.load(file)  # Loads all themes to dictionary
+with open("themes.json", "r") as themes_file:  # Opens the JSON file
+    themes = json.load(themes_file)  # Loads all themes to dictionary
 colours = {"neg": "#D62F2F", "pos": "#109110"}  # Stores the current theme
 colours.update(themes["Dark"])  # Sets the current theme to dark
 current_theme = StringVar(value="Dark")  # Variable to store the current theme
