@@ -1,3 +1,6 @@
+# The main body of code
+# Created: 04/10/23
+# Last edited: 31/12/23
 from tkinter import *  # GUI
 from tkinter import messagebox  # Error messages
 import json  # Themes
@@ -190,7 +193,6 @@ def loadInputFrame():
     """
     Loads the input frame
     """
-
     def toggleComparison():
         """
         Toggles whether drag is compared
@@ -259,8 +261,8 @@ def loadInputFrame():
 
     CustomButton(input_frame, **style["button"], text="Run", width=10, command=run).place(x=160, y=480)
 
-    with open("definitions.txt", "r", encoding="UTF-8") as definition_file:
-        for x, line in enumerate(definition_file):
+    with open("definitions.txt", "r", encoding="UTF-8") as definition_file:  # Opens the file definitions.txt
+        for x, line in enumerate(definition_file):  # Iterates over each line in the file
             HintLabel(input_frame, text=(line.strip()).replace(";", "\n"), bg=colours["but_bg"],
                       fg=colours["text"], width=2).place(x=330, y=40 * x + 20)
 
@@ -306,7 +308,7 @@ def openSettingsWindow():
     settings_win = Toplevel(root)
     settings_win.resizable(False, False)  # Keeps window the same size
     settings_win.title("Settings")
-    settings_win.geometry("400x250+760+415")
+    settings_win.geometry("400x250+760+415")  # Opens the window in the middle of the screen
     settings_win.grab_set()  # Forces window above main window
     loadSettingsFrame(settings_win)
 
@@ -323,12 +325,12 @@ def loadSettingsFrame(win):
     Label(settings_frame, **style["label"], text="Settings").place(relx=0.5, y=30, anchor=CENTER)
     Label(settings_frame, **style["label"], text="Theme:").place(x=50, y=70)
 
-    menu = OptionMenu(settings_frame, current_theme, *themes)
-    menu.config(**style["menu"], width=10)
-    menu.place(x=120, y=70)
+    theme_menu = OptionMenu(settings_frame, current_theme, *themes)
+    theme_menu.config(**style["menu"], width=10)
+    theme_menu.place(x=120, y=70)
 
-    Checkbutton(settings_frame, **style["checkbutton"], text="Colourblind Mode", variable=colourblind_mode).place(x=50,
-                                                                                                                  y=120)
+    Checkbutton(settings_frame, **style["checkbutton"], text="Colourblind Mode",
+                variable=colourblind_mode).place(x=50, y=120)
 
     Button(settings_frame, bg=colours["but_bg"], fg=colours["text"], text="Confirm", command=updateScheme,
            borderwidth=0).pack(anchor="s", side=RIGHT)
@@ -341,12 +343,12 @@ def updateScheme():
     global style
     colours.update(themes[current_theme.get()])  # Updates the colours dictionary with the values of the chosen theme
 
-    if colourblind_mode.get():
+    if colourblind_mode.get():  # If colourblind mode is on
         colours.update({"neg": "#FF8700", "pos": "#1E78E5"})
-    else:
+    else:  # If colourblind mode is off
         colours.update({"neg": "#D62F2F", "pos": "#109110"})
 
-    style = loadTheme()
+    style = loadTheme()  # Reloads the styles with the new theme
     loadFrames()  # Reloads the frames with the new theme
 
 
@@ -366,7 +368,7 @@ def loadTheme():
     """
     Creates a dictionary storing the appearance options for different TKinter widgets using the chosen theme
     :return: a dictionary storing the appearance options for different TKinter widgets
-    :rtype: dict[str, dict[str | int| tuple[str, int]]]
+    :rtype: dict[str, dict[str, str | int| tuple[str, int]]]
     """
     style = {
         "button": {
@@ -489,7 +491,7 @@ def run():
         time.set(str(round(proj.max_t, 5)))
         loadOutputFrame()
 
-        ax = proj.displayPath(fig)  # Creates the graph
+        plot = proj.displayPath(fig)  # Creates the graph
 
     else:
         proj_drag = projectile.ProjectileDrag(*values, colour=colours["pos"])  # Projectile with drag
@@ -499,7 +501,7 @@ def run():
             while proj.pos[2] >= 0:  # Iterates while the projectile is above the ground
                 proj.move(dt)
 
-        ax = projectile.compare_paths(proj_drag, proj_no_drag, fig)  # Creates the graph with both projectiles
+        plot = projectile.compare_paths(proj_drag, proj_no_drag, fig)  # Creates the graph with both projectiles
     displayGraph(fig)  # Displays the graph
 
 
@@ -519,7 +521,6 @@ def openDatabaseWindow():
     """
     Opens the database window
     """
-
     def loadDatabaseMenuFrame():
         """
         Loads the menu frame
@@ -543,8 +544,8 @@ def openDatabaseWindow():
             record_name = chosen_record.get()
             if record_name == "Select Preset" or record_name == "No Presets":
                 return
-            c.execute("DELETE FROM Presets WHERE name=?", [record_name])
-            db.commit()
+            c.execute("DELETE FROM Presets WHERE name=?", [record_name])  # Deletes the chosen preset
+            db.commit()  # Commits the changes
             records.remove(record_name)
             messagebox.showinfo("Preset Deleted", "Preset successfully deleted")
 
@@ -616,15 +617,15 @@ def openDatabaseWindow():
         chosen_record = StringVar(database_win)
         chosen_record.set("Select Preset")
         try:
-            menu = OptionMenu(db_view_frame, chosen_record, *records)
-        except TypeError:  # Runs if there are no records
+            preset_menu = OptionMenu(db_view_frame, chosen_record, *records)
+        except TypeError:  # Runs if there are no records in Presets table
             chosen_record.set("No Presets")
             records = [" "]
-            menu = OptionMenu(db_view_frame, chosen_record, *records)
-            menu.config(state="disabled", disabledforeground=colours["text"])
+            preset_menu = OptionMenu(db_view_frame, chosen_record, *records)
+            preset_menu.config(state="disabled", disabledforeground=colours["text"])
             preview_button.config(state="disabled")
-        menu.config(**style["menu"], width=10)
-        menu.place(x=100, y=120)
+        preset_menu.config(**style["menu"], width=10)
+        preset_menu.place(x=100, y=120)
 
         Label(db_view_frame, **style["label 2"], text="v [m/s]:", anchor="e", width=10).place(x=120, y=170)
         Label(db_view_frame, **style["label 2"], text="θe [°]:", anchor="e", width=10).place(x=120, y=190)
@@ -667,20 +668,19 @@ def openDatabaseWindow():
         """
         Loads the save frame to save new presets
         """
-
         def saveRecord():
             """
             Saves a new preset to the database using values from the main window
             """
-            # Checks if name is unique
-            records = selectRecord("name", "Presets", "name", [new_preset.get()])
-            if records:  # Checks if name is unique
+            name = new_preset.get()
+            records = selectRecord("name", "Presets", "name", [name])  # Selects all records with the same name
+            if records:  # If the name is not unique
                 messagebox.showerror("Error", "Invalid input: name already in use")
                 return
-            if len(new_preset.get()) > 20:  # Checks if the name is too long
+            if len(name) > 20:  # If the name is too long
                 messagebox.showerror("Error", "Invalid input: name must be at most 20 characters")
                 return
-            elif new_preset.get() == "":  # Checks if the field is empty
+            elif name == "":  # If the field is empty
                 messagebox.showerror("Error", "Invalid input: name field empty")
                 return
             values = [
@@ -701,7 +701,7 @@ def openDatabaseWindow():
                     surface_area.get()
                 ]
             else:
-                values += [None] * 4
+                values += [None] * 4  # Used as NULL values in database
 
             valid = verifyInputs(values)  # Checks if the inputs are valid
             if not valid:
@@ -720,16 +720,16 @@ def openDatabaseWindow():
             # Finds motion id
             mid = duplicateCheck("MID", "Motion", "velocity,ele_angle,azi_angle,x,y,z", motion_record)
 
-            # c.execute("SELECT name FROM Presets WHERE (EID,PID,MID)=(?,?,?)", [eid, pid, mid])
+            # Checks if the preset is unique
             repeats = selectRecord("name", "Presets", "EID,PID,MID", [eid, pid, mid])
-            if not repeats:
-                insertRecord("Presets", "name,drag,EID,PID,MID", [new_preset.get(), drag, eid, pid, mid])
+            if not repeats:  # If the preset is unique
+                insertRecord("Presets", "name,drag,EID,PID,MID", [name, drag, eid, pid, mid])
                 messagebox.showinfo("Preset Saved", "Preset successfully saved")
-            else:
+            else:  # If it already exists
                 messagebox.showerror("Error", f"Invalid value/s: record already exists under '{repeats[0][0]}'")
                 return
 
-        new_preset = StringVar(database_win)
+        new_preset = StringVar(database_win)  # The name of the new preset
         db_save_frame = Frame(database_win, bg=colours["bg"])
         db_save_frame.place(x=0, y=26, width=800, height=374)
         Label(db_save_frame, **style["label"], text="Save Preset").place(relx=0.5, y=50, anchor=CENTER)
@@ -761,10 +761,10 @@ def insertRecord(table, fields, values):
     :param values: The values which will be inserted into the record
     :type values: list
     """
-    q_marks = "?," * len(fields.split(","))
+    q_marks = "?," * len(fields.split(","))  # Creates a string e.g. "?,?,?" with as many ?s as fields
     values = tuple(values)  # Casts list as tuple
-    c.execute(f"INSERT INTO {table} ({fields}) VALUES ({q_marks[:~0]})", values)
-    db.commit()
+    c.execute(f"INSERT INTO {table} ({fields}) VALUES ({q_marks[:~0]})", values)  # Inserts the record to the database
+    db.commit()  # Commits the changes
 
 
 def selectRecord(field, table, fields, values):
@@ -781,8 +781,8 @@ def selectRecord(field, table, fields, values):
     :return: The records which match the chosen values
     :rtype: list
     """
-    q_marks = "?," * len(fields.split(","))
-    c.execute(f"SELECT {field} FROM {table} WHERE ({fields}) IS ({q_marks[:~0]})", values)
+    q_marks = "?," * len(fields.split(","))  # Creates a string e.g. "?,?,?" with as many ?s as fields
+    c.execute(f"SELECT {field} FROM {table} WHERE ({fields}) IS ({q_marks[:~0]})", values)  # Selects the record
     return c.fetchall()
 
 
@@ -800,12 +800,12 @@ def duplicateCheck(field, table, fields, values):
     :return: the id
     :rtype: int
     """
-    primary_key = selectRecord(field, table, fields, values)
-    if not primary_key:
-        insertRecord(table, fields, values)
-        primary_key = selectRecord(field, table, fields, values)[0][0]
-    else:
-        primary_key = primary_key[0][0]
+    primary_key = selectRecord(field, table, fields, values)  # Selects the primary key from the record
+    if not primary_key:  # If the record does not exist
+        insertRecord(table, fields, values)  # Inserts the record
+        primary_key = selectRecord(field, table, fields, values)[0][0]  # Fetches the primary key of the new record
+    else:  # If the record exists
+        primary_key = primary_key[0][0]  # Isolates the primary key from the record
     return primary_key
 
 
@@ -817,6 +817,7 @@ def selectPreset(name):
     :return: The values from the preset
     :rtype: tuple
     """
+    # Selects all the values from the preset
     c.execute("""SELECT Presets.drag, 
     Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
     Environments.gravity, Environments.air_density,
@@ -833,6 +834,7 @@ db = sqlite3.connect("presets.db")  # Connects to file presets.db
 db.execute("PRAGMA foreign_keys = ON")  # Enables foreign keys
 c = db.cursor()
 
+# Creates the tables if they don't exist
 c.execute("""CREATE TABLE IF NOT EXISTS Environments
 (EID                INTEGER     PRIMARY KEY,
 gravity             REAL        NOT NULL,
@@ -895,7 +897,7 @@ mass = StringVar()
 air_density = StringVar()
 drag_coefficient = StringVar()
 surface_area = StringVar()
-compare_drag = BooleanVar(value=False)
+compare_drag = BooleanVar(value=False)  # Boolean value whether both graphs are shown
 
 # Results
 position = StringVar(value="__________, __________, __________")

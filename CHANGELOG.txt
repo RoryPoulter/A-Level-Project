@@ -79,3 +79,4 @@
 28-12-2023 22:41:25: Added functions for inserting and selecting records
 28-12-2023 23:11:53: Fixed issue with running simulation with drag
 29-12-2023 01:31:06: Added function to select all values in preset
+31-12-2023 17:02:31: Improved documentation/readability
