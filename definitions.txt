@@ -1,10 +1,11 @@
-Drag - A force which acts against the direction of motion of an object travelling in a fluid
-Velocity [m/s] - The initial speed of the projectile
-Elevation angle [°] - The angle from the ground a which a projectile is fired
-Azimuth angle [°] - The angle between the x and y axes
-x, y, z - The starting coordinates (z is the vertical coordinate)
-Gravity [m/s²] - The acceleration due to gravity
-Mass [kg] - The mass of the projectile
-Air density [kg/m³] - The density of the fluid the projectile is travelling through
-Drag coefficient - A measure of the effectiveness of a shape in reducing drag
-Surface area [m²] - The surface area of the projectile
+The initial speed of the projectile;0 < u
+The angle from the ground at which a projectile is fired;0 ≤ θe < 90
+The angle between the x and y axes;0 ≤ θa < 360
+The initial x coordinate;0 ≤ x
+The initial y coordinate;0 ≤ y
+The initial z coordinate (height);0 ≤ z
+The acceleration due to gravity;0 < g
+The mass of the projectile;0 < m
+The density of the fluid the projectile is travelling through;0 < ρ
+A measure of the effectiveness of a shape in reducing drag;0 < cd ≤ 1
+The surface area of the projectile;0 < A

@@ -2,7 +2,6 @@
 # Last edited: 08/12/23 - improved documentation
 
 import numpy as np                  # Used for vector calculations
-import matplotlib.pyplot as plt     # Used for GUI
 from math import sin, cos           # Used for trig calculations
 from math import radians as rad     # Convert degrees to radians
 
@@ -67,11 +66,12 @@ class Projectile:
         s = self.pos - self.pos0
         return mag(s)
 
-    def displayPath(self):
+    def displayPath(self, fig):
         """
         Plots the flight path on a 3D scatter graph
+        :param fig: Matplotlib figure
+        :return: Returns the Matplotlib subplot
         """
-        fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
         n = (len(self.coords) // 20) + 1
@@ -94,11 +94,29 @@ class Projectile:
         ax.set_ylim3d(0, max_coords)
         ax.set_zlim3d(0, max_coords)
 
-        plt.show()
+        return ax
 
 
 class ProjectileNoDrag(Projectile):
     def __init__(self, velocity, ele_angle, azi_angle, x, y, z, gravity, **kwargs):
+        """
+        Creates an instance of the object
+        :param velocity: The magnitude of the initial velocity
+        :type velocity: float | int
+        :param ele_angle: The elevation angle
+        :type ele_angle: float | int
+        :param azi_angle: The azimuth angle
+        :type azi_angle: float | int
+        :param x: The initial x coordinate
+        :type x: float | int
+        :param y: The initial y coordinate
+        :type y: float | int
+        :param z: The initial z coordinate (height)
+        :type z: float | int
+        :param gravity: The magnitude of acceleration due to gravity
+        :type gravity: float | int
+        :param kwargs: Appearance options for the scatter graph
+        """
         super().__init__(velocity, ele_angle, azi_angle, x, y, z, gravity, **kwargs)
 
         self.max_t = -self.u[2] / self.g[2]
@@ -190,16 +208,16 @@ class ProjectileDrag(Projectile):
         self.coords.append([*self.pos])
 
 
-def compare_paths(projectile_1, projectile_2):
+def compare_paths(projectile_1, projectile_2, fig):
     """
     Plots the flight paths of two projectiles on one scatter graph
     :param projectile_1: The 1st projectile object
     :type projectile_1: Projectile
     :param projectile_2: The 2nd projectile object
     :type projectile_2: Projectile
+    :param fig: Matplotlib figure
     :return: Matplotlib subplot
     """
-    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     for projectile in (projectile_1, projectile_2):
@@ -228,17 +246,4 @@ def compare_paths(projectile_1, projectile_2):
     ax.set_ylim3d(0, max_coords)
     ax.set_zlim3d(0, max_coords)
 
-    plt.show()
-
-
-if __name__ == "__main__":
-    proj_1 = ProjectileDrag(50, 60, 60, 0.0, 0.0, 50.0, 9.81, 20.0, 1.2, 0.47, 0.1, colour="green")
-    proj_2 = ProjectileNoDrag(50, 60, 60, 0.0, 0.0, 50.0, 9.81, marker="^")
-
-    dt: float = 0.01
-    for proj in (proj_1, proj_2):
-        while proj.pos[2] >= 0:
-            proj.move(dt)
-        proj.displayPath()
-
-    compare_paths(proj_1, proj_2)
+    return ax

@@ -1,7 +1,8 @@
 {
-  "Dark": {"bg": "#2E3142", "text": "#FFFFFF", "but_bg": "#555F70"},
-  "Light": {"bg": "#7E8D85", "text": "#F0F7F4", "but_bg": "#B3BFB8"},
-  "Deep Sea": {"bg": "#0C1821", "text": "#CCC9DC", "but_bg": "#1B2A41"},
-  "Rose": {"bg": "#461220", "text": "#FED0BB", "but_bg": "#8C2F39"},
-  "Amethyst": {"bg": "#380036", "text": "#F8C0C8", "but_bg": "#821579"}
+  "Dark": {"bg": "#2E3142", "text": "#FFFFFF", "but_bg": "#555F70", "accent": "#a379e7"},
+  "Light": {"bg": "#7E8D85", "text": "#F0F7F4", "but_bg": "#B3BFB8", "accent": "#7d7f83"},
+  "Deep Sea": {"bg": "#0C1821", "text": "#CCC9DC", "but_bg": "#1B2A41", "accent": "#187b80"},
+  "Rose": {"bg": "#461220", "text": "#FED0BB", "but_bg": "#8C2F39", "accent": "#e56ba2"},
+  "Amethyst": {"bg": "#380036", "text": "#F8C0C8", "but_bg": "#821579", "accent": "#ff3bef"},
+  "Forest": {"bg": "#064731", "text": "#d2f2e7", "but_bg": "#1dbd88", "accent": "#0c875e"}
 }
