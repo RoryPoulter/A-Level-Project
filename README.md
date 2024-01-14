@@ -30,9 +30,5 @@ window.
 ![img.png](Media/presets-demo.gif)
 
 ## Development
-Written in Python 3.10.\
-Currently in development.
-Future updates will include:
-<ul>
-    <li>Additional themes
-</ul>
+Written in [Python 3.10](https://www.python.org/downloads/).\
+Development is finished.
