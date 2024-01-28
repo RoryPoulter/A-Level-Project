@@ -7,6 +7,7 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the req
 ```bash
 pip install -r /path/to/requiremnets.txt
 ```
+Or run the file 'setup.cmd'
 
 ## Usage
 This program allows the user to simulate projectile motion based on chosen initial conditions.
