@@ -9,6 +9,7 @@ import sqlite3  # Database
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embedding the graph
 import matplotlib.pyplot as plt  # Graph
 import ctypes
+import os.path
 
 
 class HintLabel(Label):
@@ -261,7 +262,8 @@ def loadInputFrame():
 
     CustomButton(input_frame, **style["button"], text="Run", width=10, command=run).place(x=160, y=480)
 
-    with open("definitions.txt", "r", encoding="UTF-8") as definition_file:  # Opens the file definitions.txt
+    filepath = os.path.dirname(__file__)
+    with open(os.path.join(filepath, "definitions.txt"), "r", encoding="UTF-8") as definition_file:  # Opens the file definitions.txt
         for x, line in enumerate(definition_file):  # Iterates over each line in the file
             HintLabel(input_frame, text=(line.strip()).replace(";", "\n"), bg=colours["but_bg"],
                       fg=colours["text"], width=2).place(x=330, y=40 * x + 20)
@@ -830,7 +832,7 @@ def selectPreset(name):
 
 
 # Database
-db = sqlite3.connect("presets.db")  # Connects to file presets.db
+db = sqlite3.connect("..\src\presets.db")  # Connects to file presets.db
 db.execute("PRAGMA foreign_keys = ON")  # Enables foreign keys
 c = db.cursor()
 
@@ -872,7 +874,8 @@ root = Tk()
 root.title("Projectile Simulator")
 root.attributes("-fullscreen", True)
 
-with open("themes.json", "r") as themes_file:  # Opens the JSON file
+filepath = os.path.dirname(__file__)
+with open(os.path.join(filepath, "themes.json"), "r") as themes_file:  # Opens the JSON file
     themes = json.load(themes_file)  # Loads all themes to dictionary
 colours = {"neg": "#D62F2F", "pos": "#109110"}  # Stores the current theme
 colours.update(themes["Dark"])  # Sets the current theme to dark
