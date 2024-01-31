@@ -1,6 +1,6 @@
 # The main body of code
 # Created: 04/10/23
-# Last edited: 31/12/23
+# Last edited: 29/01/24
 from tkinter import *  # GUI
 from tkinter import messagebox  # Error messages
 import json  # Themes
