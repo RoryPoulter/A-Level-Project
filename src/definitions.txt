@@ -1,5 +1,5 @@
 The initial speed of the projectile;0 < u
-The angle from the ground at which a projectile is fired;0 ≤ θe < 90
+The angle from the ground at which a projectile is fired;0 ≤ θe ≤ 90
 The angle between the x and y axes;0 ≤ θa < 360
 The initial x coordinate;0 ≤ x
 The initial y coordinate;0 ≤ y
