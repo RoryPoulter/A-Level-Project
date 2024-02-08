@@ -18,7 +18,8 @@ The program uses tkinter for the main GUI, and matplotlib to display the results
 The appearance of the GUI can be changed by toggling colourblind mode and changing the theme.
 The themes are stored in an external JSON file.
 
-![img.png](Media/themes-demo.gif)
+![themes-demo](https://github.com/RoryPoulter/A-Level-Project/assets/118304377/254f73dc-8836-476d-a3e6-a40aecf5c6bf)
+
 The program uses NumPy for the vector calculations. Due to the nature of the drag calculations, results 
 including drag are only approximations.
 
@@ -28,7 +29,8 @@ to manage the presets.\
 The values can be previewed in the preset window and loaded into the entry fields in the main
 window.
 
-![img.png](Media/presets-demo.gif)
+![presets-demo](https://github.com/RoryPoulter/A-Level-Project/assets/118304377/01377cf2-ab31-4103-9f9b-6bb7b1ea2410)
+
 
 ## Development
 Written in [Python 3.10](https://www.python.org/downloads/).\
