@@ -8,3 +8,4 @@
 /v1/
 /src/presets.db
 /.idea/
+*__pycache__*
