@@ -172,11 +172,6 @@ def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=No
     return True
 
 
-def closeWindow():
-    root.destroy()
-    quit()
-
-
 def loadToolsFrame():
     """
     Loads the toolbar
@@ -186,7 +181,7 @@ def loadToolsFrame():
 
     CustomButton(tools_frame, hover_background=colours["neg"], hover_foreground="#FFFFFF", bg=colours["bg"],
                  text="X", fg=colours["text"], height=3, width=5,
-                 command=closeWindow, activebackground=colours["neg"],
+                 command=quit, activebackground=colours["neg"],
                  activeforeground="#FFFFFF").pack(anchor="e", side=RIGHT)
 
     CustomButton(tools_frame, **style["tool button"], text="_", command=root.iconify).pack(anchor="e", side=RIGHT)
