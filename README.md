@@ -3,11 +3,15 @@ Python program to simulate projectile motion in 3 dimensions.\
 Developed for my Computer Science A-Level project.
 
 ## Installation
+### Automatic Installation
+Run the file `.build/setup.cmd`
+
+### Manual Installation
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the required packages.
 ```bash
 pip install -r /path/to/requiremnets.txt
 ```
-Or run the file `setup.cmd`
+Once the libraries have been installed, run the file `src/main.py`
 
 ## Usage
 This program allows the user to simulate projectile motion based on chosen initial conditions.
