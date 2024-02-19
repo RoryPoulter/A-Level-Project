@@ -14,28 +14,63 @@ pip install -r /path/to/requiremnets.txt
 Once the libraries have been installed, run the file `src/main.py`
 
 ## Usage
-This program allows the user to simulate projectile motion based on chosen initial conditions.
-Includes definitions of key terms which are read from an external .txt file.
-The effects of drag can be included/excluded, or both to show how it affects a projectile.
+### Simulation
+The values can be input into text boxes.
 
+To toggle if drag is included, press the 'Drag'/'No Drag' button. If you want to show both flight 
+paths, tick the checkbox. Due to the nature of the drag calculations, results including drag are 
+only approximations.
+
+### GUI
 The program uses tkinter for the main GUI, and matplotlib to display the results. 
 The appearance of the GUI can be changed by toggling colourblind mode and changing the theme.
 The themes are stored in an external JSON file.
 
 ![themes-demo](https://github.com/RoryPoulter/A-Level-Project/assets/118304377/254f73dc-8836-476d-a3e6-a40aecf5c6bf)
 
-The program uses NumPy for the vector calculations. Due to the nature of the drag calculations, results 
-including drag are only approximations.
-
 ### Presets
 The program allows users to save presets to an external .db file. The GUI features a window
-to manage the presets.\
-The values can be previewed in the preset window and loaded into the entry fields in the main
-window.
-
+to manage the presets.
 ![presets-demo](https://github.com/RoryPoulter/A-Level-Project/assets/118304377/01377cf2-ab31-4103-9f9b-6bb7b1ea2410)
 
+#### Saving presets
+* Enter the values into the text boxes on the main window
+* Press the save icon
+* Press the 'Save Preset' button
+* Enter the preset name (must be unique and under 20 characters)
+* Press 'Save'
+* A pop-up will be displayed if successful
 
-## Development
+#### Previewing presets
+* Press the save icon
+* Press the 'View Presets' button
+* Select the preset from the dropdown
+* Press the 'Preview' button
+
+#### Loading presets
+* Press the save icon
+* Press the 'View Presets' button
+* Select the preset from the dropdown
+* Press the 'Load' button
+* The values will be automatically copied into the text boxes
+
+#### Deleting presets
+* Press the save icon
+* Press the 'View Presets' button
+* Select the preset from the dropdown
+* Press the 'Delete' button
+* A pop-up will be displayed if successful
+
+
+
+
+## Roadmap
 Written in [Python 3.10](https://www.python.org/downloads/).\
-Development is finished.
+Future updates will include:
+* `config.json` file to store GUI settings
+* Results for comparing projectiles
+* Code overhaul to make future development easier
+* Theme editor to create and save custom themes
+* Update `presets.db` to allow presets for comparing drag
+* Full error diagnosis for input validation
+* Button to reset graph
