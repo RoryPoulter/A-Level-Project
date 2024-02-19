@@ -889,20 +889,20 @@ root = Tk()
 root.title("Projectile Simulator")
 root.attributes("-fullscreen", True)
 
-with open("config.json", "r") as settings_file:
-    data = json.load(settings_file)
-theme = data["theme"]
-colourblind = data["colourblind"]
+with open("config.json", "r") as settings_file:  # Opens file config.json
+    data = json.load(settings_file)  # Loads the data
+theme = data["theme"]  # Last used theme
+colourblind = data["colourblind"]  # Last used colourblind setting
 
 colourblind_schemes = {
     True: {"neg": "#FF8700", "pos": "#1E78E5"},
     False: {"neg": "#D62F2F", "pos": "#109110"}
 }
 
-with open("themes.json", "r") as themes_file:  # Opens the JSON file
+with open("themes.json", "r") as themes_file:  # Opens file themes.json
     themes = json.load(themes_file)  # Loads all themes to dictionary
 colours = colourblind_schemes[colourblind]  # Stores the current theme
-colours.update(themes[theme])  # Sets the current theme to dark
+colours.update(themes[theme])
 current_theme = StringVar(value=theme)  # Variable to store the current theme
 colourblind_mode = BooleanVar(value=colourblind)  # Boolean value for if colourblind mode is active
 style = loadTheme()  # Stores the style options for different widgets
