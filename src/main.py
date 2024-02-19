@@ -336,6 +336,22 @@ def loadSettingsFrame(win):
            borderwidth=0).pack(anchor="s", side=RIGHT)
 
 
+def updateSettings(theme, colourblind):
+    """
+    Updates the file `config.json` with the new settings
+    :param theme: The current theme
+    :type theme: str
+    :param colourblind: If colourblind mode is active
+    :type colourblind: bool
+    """
+    with open("config.json", "r") as file:
+        data = json.load(file)
+    data |= {"theme": theme, "colourblind": colourblind}
+    new_data = json.dumps(data, indent=2)
+    with open("config.json", "w") as file:
+        file.write(new_data)
+
+
 def updateScheme():
     """
     Updates the dictionary colours with the new theme
@@ -350,6 +366,7 @@ def updateScheme():
 
     style = loadTheme()  # Reloads the styles with the new theme
     loadFrames()  # Reloads the frames with the new theme
+    updateSettings(current_theme.get(), colourblind_mode.get())
 
 
 def loadFrames():
@@ -872,13 +889,22 @@ root = Tk()
 root.title("Projectile Simulator")
 root.attributes("-fullscreen", True)
 
+with open("config.json", "r") as settings_file:
+    data = json.load(settings_file)
+theme = data["theme"]
+colourblind = data["colourblind"]
+
+colourblind_schemes = {
+    True: {"neg": "#FF8700", "pos": "#1E78E5"},
+    False: {"neg": "#D62F2F", "pos": "#109110"}
+}
 
 with open("themes.json", "r") as themes_file:  # Opens the JSON file
     themes = json.load(themes_file)  # Loads all themes to dictionary
-colours = {"neg": "#D62F2F", "pos": "#109110"}  # Stores the current theme
-colours.update(themes["Dark"])  # Sets the current theme to dark
-current_theme = StringVar(value="Dark")  # Variable to store the current theme
-colourblind_mode = BooleanVar(value=False)  # Boolean value for if colourblind mode is active
+colours = colourblind_schemes[colourblind]  # Stores the current theme
+colours.update(themes[theme])  # Sets the current theme to dark
+current_theme = StringVar(value=theme)  # Variable to store the current theme
+colourblind_mode = BooleanVar(value=colourblind)  # Boolean value for if colourblind mode is active
 style = loadTheme()  # Stores the style options for different widgets
 
 root.config(bg=colours["accent"])
