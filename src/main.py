@@ -1,6 +1,6 @@
 # The main body of code
 # Created: 04/10/23
-# Last edited: 29/01/24
+# Last edited: 20/02/24
 from tkinter import *  # GUI
 from tkinter import messagebox  # Error messages
 import json  # Themes
@@ -9,6 +9,7 @@ import sqlite3  # Database
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embedding the graph
 import matplotlib.pyplot as plt  # Graph
 import ctypes
+import sys
 
 
 class HintLabel(Label):
@@ -172,6 +173,10 @@ def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=No
     return True
 
 
+def close():
+    sys.exit()
+
+
 def loadToolsFrame():
     """
     Loads the toolbar
@@ -181,7 +186,7 @@ def loadToolsFrame():
 
     CustomButton(tools_frame, hover_background=colours["neg"], hover_foreground="#FFFFFF", bg=colours["bg"],
                  text="X", fg=colours["text"], height=3, width=5,
-                 command=quit, activebackground=colours["neg"],
+                 command=close, activebackground=colours["neg"],
                  activeforeground="#FFFFFF").pack(anchor="e", side=RIGHT)
 
     CustomButton(tools_frame, **style["tool button"], text="_", command=root.iconify).pack(anchor="e", side=RIGHT)
