@@ -67,7 +67,6 @@ to manage the presets.
 ## Roadmap
 Written in [Python 3.10](https://www.python.org/downloads/).\
 Future updates will include:
-* `config.json` file to store GUI settings
 * Results for comparing projectiles
 * Code overhaul to make future development easier
 * Theme editor to create and save custom themes
