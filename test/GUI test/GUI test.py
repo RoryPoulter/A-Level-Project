@@ -1,5 +1,6 @@
 from tkinter import *
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embedding the graph
+import matplotlib.pyplot as plt  # Graph
 
 class HintLabel(Label):
     def __init__(self, *args, **kwargs):
@@ -164,17 +165,6 @@ def setupInterface(window):
     :param window: the window
     :type window: Tk
     """
-    def toggleComparison():
-        """
-        Toggles whether drag is compared
-        """
-        if not drag:
-            toggleDrag()
-        if compare_drag.get():
-            drag_button.config(state="disabled")
-        else:
-            drag_button.config(state="normal")
-
     def toggleDrag():
         """
         Toggles whether drag is included
@@ -262,6 +252,33 @@ def setupInterface(window):
     Radiobutton(input_frame, **style["radiobutton"], text="Drag", variable=drag, value="drag").place(x=140, y=480)
     Radiobutton(input_frame, **style["radiobutton"], text="Compare", variable=drag, value="compare").place(x=260, y=480)
 
+    # Result
+    output_frame = Frame(root, bg=colours["bg"])
+    output_frame.place(x=0, y=592, width=899, height=488)
+
+    Label(output_frame, **style["label"], text="Final Velocity [m/s]:", anchor="e", width=15).place(x=20, y=20)
+    Label(output_frame, **style["label"], text="Displacement [m]:", anchor="e", width=15).place(x=20, y=70)
+    Label(output_frame, **style["label"], text="Position:", anchor="e", width=15).place(x=20, y=120)
+    Label(output_frame, **style["label"], text="Flight Duration [s]:", anchor="e", width=15).place(x=20, y=170)
+    Label(output_frame, **style["label"], text="Max Height [m]:", anchor="e", width=15).place(x=20, y=220)
+    Label(output_frame, **style["label"], text="Time [s]:", anchor="e", width=15).place(x=20, y=270)
+
+    Label(output_frame, **style["label"], textvariable=velocity).place(x=200, y=20)
+    Label(output_frame, **style["label"], textvariable=displacement).place(x=200, y=70)
+    Label(output_frame, **style["label"], textvariable=position).place(x=200, y=120)
+    Label(output_frame, **style["label"], textvariable=landing_time).place(x=200, y=170)
+    Label(output_frame, **style["label"], textvariable=max_height).place(x=200, y=220)
+    Label(output_frame, **style["label"], textvariable=time).place(x=200, y=270)
+
+    # Graph frame
+    graph_frame = Frame(root, bg=colours["bg"])
+    graph_frame.place(x=900, y=41, width=1020, height=1039)
+    display_frame = Frame(graph_frame, bg=colours["but_bg"])
+    display_frame.place(x=25, y=25, width=970, height=970)
+    canvas = FigureCanvasTkAgg(fig, master=display_frame)  # A tk.DrawingArea.
+    canvas.draw()
+    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)  # this is necessary on Windows to prevent
+
 
 if __name__ == "__main__":
     colours = {"bg": "#2E3142", "text": "#FFFFFF", "but_bg": "#555F70", "accent": "#a379e7", "neg": "#D62F2F", "pos": "#109110"}
@@ -282,5 +299,13 @@ if __name__ == "__main__":
     drag_coefficient = StringVar()
     surface_area = StringVar()
 
+    # Results
+    position = StringVar(value="__________, __________, __________")
+    velocity = StringVar(value="__________")
+    displacement = StringVar(value="__________")
+    landing_time = StringVar(value="__________")
+    max_height = StringVar(value="__________")
+    time = StringVar(value="__________")
+    fig = plt.figure()
     setupInterface(root)
     root.mainloop()
