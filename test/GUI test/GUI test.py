@@ -132,6 +132,14 @@ def loadTheme():
             "borderwidth": 0,
             "activebackground": colours["but_bg"],
             "activeforeground": colours["text"]
+        },
+        "radiobutton": {
+            "bg": colours["bg"],
+            "fg": colours["text"],
+            "font": ("Arial", 14),
+            "activeforeground": colours["text"],
+            "activebackground": colours["bg"],
+            "selectcolor": colours["bg"]
         }
     }
 
@@ -233,22 +241,26 @@ def setupInterface(window):
     a_entry.place(x=200, y=420)
 
     drag_button = Button(input_frame, **style["pos button"], text="Drag", width=10, command=toggleDrag)
-    drag_button.place(x=20, y=480)
+    # drag_button.place(x=20, y=480)
 
-    if not drag:
+    if drag.get() == "no drag":
         drag_button.config(bg=colours["neg"], text="No Drag")
         for entry in (m_entry, rho_entry, cd_entry, a_entry):
             entry.config(state="disabled")
 
-    CustomButton(input_frame, **style["button"], text="Run", width=10, command=run).place(x=160, y=480)
+    CustomButton(input_frame, **style["button"], text="Run", width=10, command=run).place(x=380, y=480)
 
     with open("definitions.txt", "r", encoding="UTF-8") as definition_file:  # Opens the file definitions.txt
         for x, line in enumerate(definition_file):  # Iterates over each line in the file
             HintLabel(input_frame, text=(line.strip()).replace(";", "\n"), bg=colours["but_bg"],
                       fg=colours["text"], width=2).place(x=330, y=40 * x + 20)
 
-    Checkbutton(input_frame, **style["checkbutton"], text="Compare Drag", variable=compare_drag,
-                command=toggleComparison).place(x=300, y=480)
+    # Checkbutton(input_frame, **style["checkbutton"], text="Compare Drag",
+    #             command=toggleComparison).place(x=300, y=480)
+
+    Radiobutton(input_frame, **style["radiobutton"], text="No Drag", variable=drag, value="no drag").place(x=20, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="Drag", variable=drag, value="drag").place(x=140, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="Compare", variable=drag, value="compare").place(x=260, y=480)
 
 
 if __name__ == "__main__":
@@ -256,7 +268,7 @@ if __name__ == "__main__":
     style = loadTheme()
     root = Tk()
 
-    drag = False
+    drag = StringVar(value="no drag")
     # Inputs
     initial_velocity = StringVar()
     elevation_angle = StringVar()
@@ -269,7 +281,6 @@ if __name__ == "__main__":
     air_density = StringVar()
     drag_coefficient = StringVar()
     surface_area = StringVar()
-    compare_drag = BooleanVar(value=False)  # Boolean value whether both graphs are shown
 
     setupInterface(root)
     root.mainloop()
