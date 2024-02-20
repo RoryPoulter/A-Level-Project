@@ -851,97 +851,110 @@ def selectPreset(name):
     return c.fetchall()[0]
 
 
-# Database
-db = sqlite3.connect("presets.db")  # Connects to file presets.db
-db.execute("PRAGMA foreign_keys = ON")  # Enables foreign keys
-c = db.cursor()
+def setupDatabase(database):
+    """
+    Creates the database and all the tables
+    :param database: The database connection
+    :type database: sqlite3.Connection
+    :return: The cursor for interacting with the database
+    :rtype: sqlite3.Cursor
+    """
+    database.execute("PRAGMA foreign_keys = ON")  # Enables foreign keys
+    cursor = database.cursor()
+    # Creates the tables
+    cursor.execute("""CREATE TABLE IF NOT EXISTS Environments
+    (EID                INTEGER     PRIMARY KEY,
+    gravity             REAL        NOT NULL,
+    air_density         REAL)""")
 
-# Creates the tables if they don't exist
-c.execute("""CREATE TABLE IF NOT EXISTS Environments
-(EID                INTEGER     PRIMARY KEY,
-gravity             REAL        NOT NULL,
-air_density         REAL)""")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS Projectiles
+    (PID                INTEGER     PRIMARY KEY,
+    mass                REAL,
+    drag_coefficient    REAL,
+    area                REAL)""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS Projectiles
-(PID                INTEGER     PRIMARY KEY,
-mass                REAL,
-drag_coefficient    REAL,
-area                REAL)""")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS Motion
+    (MID                INTEGER     PRIMARY KEY,
+    velocity            REAL        NOT NULL,
+    ele_angle           REAL        NOT NULL,
+    azi_angle           REAL        NOT NULL,
+    x                   REAL        NOT NULL,
+    y                   REAL        NOT NULL,
+    z                   REAL        NOT NULL)""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS Motion
-(MID                INTEGER     PRIMARY KEY,
-velocity            REAL        NOT NULL,
-ele_angle           REAL        NOT NULL,
-azi_angle           REAL        NOT NULL,
-x                   REAL        NOT NULL,
-y                   REAL        NOT NULL,
-z                   REAL        NOT NULL)""")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS Presets
+    (name               TEXT        PRIMARY KEY,
+    drag                INTEGER     NOT NULL,
+    EID                 INTEGER     NOT NULL,
+    PID                 INTEGER     NOT NULL,
+    MID                 INTEGER     NOT NULL,
+    FOREIGN KEY (EID) REFERENCES Environments (EID),
+    FOREIGN KEY (PID) REFERENCES Projectiles (PID),
+    FOREIGN KEY (MID) REFERENCES Motion (MID))""")
+    database.commit()  # Saves any changes
 
-c.execute("""CREATE TABLE IF NOT EXISTS Presets
-(name               TEXT        PRIMARY KEY,
-drag                INTEGER     NOT NULL,
-EID                 INTEGER     NOT NULL,
-PID                 INTEGER     NOT NULL,
-MID                 INTEGER     NOT NULL,
-FOREIGN KEY (EID) REFERENCES Environments (EID),
-FOREIGN KEY (PID) REFERENCES Projectiles (PID),
-FOREIGN KEY (MID) REFERENCES Motion (MID))""")
-db.commit()  # Saves any changes
+    return cursor
 
-ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
-root = Tk()
-root.title("Projectile Simulator")
-root.attributes("-fullscreen", True)
+if __name__ == "__main__":
+    # Database
+    db = sqlite3.connect("presets.db")  # Connects to file presets.db
+    c = setupDatabase(db)  # Creates the cursor
 
-with open("config.json", "r") as settings_file:  # Opens file config.json
-    data = json.load(settings_file)  # Loads the data
-theme = data["theme"]  # Last used theme
-colourblind = data["colourblind"]  # Last used colourblind setting
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
-colourblind_schemes = {
-    True: {"neg": "#FF8700", "pos": "#1E78E5"},
-    False: {"neg": "#D62F2F", "pos": "#109110"}
-}
+    root = Tk()
+    root.title("Projectile Simulator")
+    root.attributes("-fullscreen", True)
 
-with open("themes.json", "r") as themes_file:  # Opens file themes.json
-    themes = json.load(themes_file)  # Loads all themes to dictionary
-colours = colourblind_schemes[colourblind]  # Stores the current theme
-colours.update(themes[theme])
-current_theme = StringVar(value=theme)  # Variable to store the current theme
-colourblind_mode = BooleanVar(value=colourblind)  # Boolean value for if colourblind mode is active
-style = loadTheme()  # Stores the style options for different widgets
+    with open("config.json", "r") as settings_file:  # Opens file config.json
+        data = json.load(settings_file)  # Loads the data
+    theme = data["theme"]  # Last used theme
+    colourblind = data["colourblind"]  # Last used colourblind setting
 
-root.config(bg=colours["accent"])
+    colourblind_schemes = {
+        True: {"neg": "#FF8700", "pos": "#1E78E5"},
+        False: {"neg": "#D62F2F", "pos": "#109110"}
+    }
 
-graph_frame = Frame(root)
+    with open("themes.json", "r") as themes_file:  # Opens file themes.json
+        themes = json.load(themes_file)  # Loads all themes to dictionary
+    colours = colourblind_schemes[colourblind]  # Stores the current theme
+    colours.update(themes[theme])
+    current_theme = StringVar(value=theme)  # Variable to store the current theme
+    colourblind_mode = BooleanVar(value=colourblind)  # Boolean value for if colourblind mode is active
+    style = loadTheme()  # Stores the style options for different widgets
 
-drag = False
-# Inputs
-initial_velocity = StringVar()
-elevation_angle = StringVar()
-azimuth_angle = StringVar()
-x0 = StringVar()
-y0 = StringVar()
-z0 = StringVar()
-gravity = StringVar()
-mass = StringVar()
-air_density = StringVar()
-drag_coefficient = StringVar()
-surface_area = StringVar()
-compare_drag = BooleanVar(value=False)  # Boolean value whether both graphs are shown
+    root.config(bg=colours["accent"])
 
-# Results
-position = StringVar(value="__________, __________, __________")
-velocity = StringVar(value="__________")
-displacement = StringVar(value="__________")
-landing_time = StringVar(value="__________")
-max_height = StringVar(value="__________")
-time = StringVar(value="__________")
+    graph_frame = Frame(root)
 
-loadToolsFrame()  # Loads the tool frame
-loadInputFrame()  # Loads the input frame
-loadOutputFrame()  # Loads the results frame
-loadGraphFrame()  # Loads the graph frame
+    drag = False
+    # Inputs
+    initial_velocity = StringVar()
+    elevation_angle = StringVar()
+    azimuth_angle = StringVar()
+    x0 = StringVar()
+    y0 = StringVar()
+    z0 = StringVar()
+    gravity = StringVar()
+    mass = StringVar()
+    air_density = StringVar()
+    drag_coefficient = StringVar()
+    surface_area = StringVar()
+    compare_drag = BooleanVar(value=False)  # Boolean value whether both graphs are shown
 
-root.mainloop()  # Keeps the window open
+    # Results
+    position = StringVar(value="__________, __________, __________")
+    velocity = StringVar(value="__________")
+    displacement = StringVar(value="__________")
+    landing_time = StringVar(value="__________")
+    max_height = StringVar(value="__________")
+    time = StringVar(value="__________")
+
+    loadToolsFrame()  # Loads the tool frame
+    loadInputFrame()  # Loads the input frame
+    loadOutputFrame()  # Loads the results frame
+    loadGraphFrame()  # Loads the graph frame
+
+    root.mainloop()  # Keeps the window open
