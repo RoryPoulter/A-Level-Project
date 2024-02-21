@@ -2,6 +2,7 @@ from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embedding the graph
 import matplotlib.pyplot as plt  # Graph
 
+
 class HintLabel(Label):
     def __init__(self, *args, **kwargs):
         """
@@ -147,6 +148,13 @@ def loadTheme():
     return style
 
 
+def displayGraph():
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(list(range(10)),
+               list(range(10)),
+               list(range(10)))
+
+
 def run(): ...
 
 
@@ -156,7 +164,40 @@ def openDatabaseWindow(): ...
 def close(): quit()
 
 
-def openSettingsWindow(): ...
+def openSettingsWindow():
+    """
+    Opens the settings window
+    """
+    global settings_win
+    settings_win = Toplevel(root)
+    settings_win.resizable(False, False)  # Keeps window the same size
+    settings_win.title("Settings")
+    settings_win.geometry("400x250+760+415")  # Opens the window in the middle of the screen
+    settings_win.grab_set()  # Forces window above main window
+    loadSettingsFrame(settings_win)
+
+
+def loadSettingsFrame(win):
+    """
+    Loads the widgets on the settings window
+    :param win: The toplevel window
+    :type win: Toplevel
+    """
+    settings_frame = Frame(win, bg=colours["bg"])
+    settings_frame.place(x=0, y=0, width=400, height=250)
+
+    Label(settings_frame, **style["label"], text="Settings").place(relx=0.5, y=30, anchor=CENTER)
+    Label(settings_frame, **style["label"], text="Theme:").place(x=50, y=70)
+
+    theme_menu = OptionMenu(settings_frame, current_theme, *themes)
+    theme_menu.config(**style["menu"], width=10)
+    theme_menu.place(x=120, y=70)
+
+    Checkbutton(settings_frame, **style["checkbutton"], text="Colourblind Mode",
+                variable=colourblind_mode).place(x=50, y=120)
+
+    Button(settings_frame, bg=colours["but_bg"], fg=colours["text"], text="Confirm", command=updateScheme,
+           borderwidth=0).pack(anchor="s", side=RIGHT)
 
 
 def setupInterface(window):
@@ -170,17 +211,13 @@ def setupInterface(window):
         Toggles whether drag is included
         """
         global drag
-        if not drag:
-            drag_button.config(text="Drag", bg=colours["pos"])
-            for entry in (m_entry, rho_entry, cd_entry, a_entry):
-                entry.config(state="normal")
-
-        else:
-            drag_button.config(text="No Drag", bg=colours["neg"])
+        if drag.get() == "no drag":
             for entry in (m_entry, rho_entry, cd_entry, a_entry):
                 entry.config(state="disabled")
 
-        drag = not drag
+        else:
+            for entry in (m_entry, rho_entry, cd_entry, a_entry):
+                entry.config(state="normal")
 
     window.title("Projectile Simulator")
     window.attributes("-fullscreen", True)
@@ -230,11 +267,7 @@ def setupInterface(window):
     a_entry = Entry(input_frame, **style["entry"], width=9, textvariable=surface_area)
     a_entry.place(x=200, y=420)
 
-    drag_button = Button(input_frame, **style["pos button"], text="Drag", width=10, command=toggleDrag)
-    # drag_button.place(x=20, y=480)
-
     if drag.get() == "no drag":
-        drag_button.config(bg=colours["neg"], text="No Drag")
         for entry in (m_entry, rho_entry, cd_entry, a_entry):
             entry.config(state="disabled")
 
@@ -248,9 +281,12 @@ def setupInterface(window):
     # Checkbutton(input_frame, **style["checkbutton"], text="Compare Drag",
     #             command=toggleComparison).place(x=300, y=480)
 
-    Radiobutton(input_frame, **style["radiobutton"], text="No Drag", variable=drag, value="no drag").place(x=20, y=480)
-    Radiobutton(input_frame, **style["radiobutton"], text="Drag", variable=drag, value="drag").place(x=140, y=480)
-    Radiobutton(input_frame, **style["radiobutton"], text="Compare", variable=drag, value="compare").place(x=260, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="No Drag", variable=drag, value="no drag",
+                command=toggleDrag).place(x=20, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="Drag", variable=drag, value="drag",
+                command=toggleDrag).place(x=140, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="Compare", variable=drag, value="compare",
+                command=toggleDrag).place(x=260, y=480)
 
     # Result
     output_frame = Frame(root, bg=colours["bg"])
