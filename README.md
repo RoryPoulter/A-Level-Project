@@ -14,6 +14,9 @@ pip install -r /path/to/requiremnets.txt
 Once the libraries have been installed, run the file `src/main.py`
 
 ## Usage
+### Settings
+Resolution: 1920x1080\
+Text scaling: 100%
 ### Simulation
 The values can be input into text boxes.
 
