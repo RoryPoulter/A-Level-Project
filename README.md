@@ -17,8 +17,8 @@ Once the libraries have been installed, run the file `src/main.py`
 ### Simulation
 The values can be input into text boxes.
 
-To toggle if drag is included, press the 'Drag'/'No Drag' button. If you want to show both flight 
-paths, tick the checkbox. Due to the nature of the drag calculations, results including drag are 
+To toggle if drag is included, tick the 'Drag' radiobutton. If you want to show both flight 
+paths, tick the "Compare" radiobutton. Due to the nature of the drag calculations, results including drag are 
 only approximations.
 
 ### GUI
@@ -70,6 +70,5 @@ Future updates will include:
 * Results for comparing projectiles
 * Code overhaul to make future development easier
 * Theme editor to create and save custom themes
-* Update `presets.db` to allow presets for comparing drag
 * Full error diagnosis for input validation
 * Button to reset graph
