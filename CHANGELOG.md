@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.1.1 [2024-02-21]
+### Improvements
+* Database can store option to compare paths
+
+### Other changes
+* Improved modularity of code
+  * Created function to declare cursor and set up database
+  * Created function to set up whole GUI
+* Created `test/` directory
+
 ## v1.1 [2024-02-19]
 ### Improvements
 * New file `config.json` to store GUI settings
