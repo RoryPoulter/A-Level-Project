@@ -1,6 +1,6 @@
 # The main body of code
 # Created: 04/10/23
-# Last edited: 20/02/24
+# Last edited: 21/02/24
 from tkinter import *  # GUI
 from tkinter import messagebox  # Error messages
 import json  # Themes
@@ -53,7 +53,7 @@ class CustomButton(Button):
         """
         Button.__init__(self, master, *args, **kwargs)
         self["borderwidth"] = 0  # Sets the border width to 0
-        self["font"] = ("Arail", 14)  # Sets the font to 14pt Arial
+        self["font"] = ("Arial", 14)  # Sets the font to 14pt Arial
         self.hover_bg = hover_background
         self.hover_fg = hover_foreground
         self.bg = self["bg"]
@@ -78,7 +78,7 @@ def verifyInputs(values):
     """
     Checks if the inputs are valid
     :param values: list of all the inputs
-    :type values: list[int | float | bool | None]
+    :type values: list[str]
     :return: whether values are valid; True for yes, False for no
     :rtype: bool
     """
@@ -90,7 +90,7 @@ def verifyInputs(values):
     # Checks for string inputs
     try:
         values[0:7] = list(map(float, values[0:7]))
-        if drag:
+        if drag.get() != "no_drag":
             values[8:] = list(map(float, values[8:]))
     except ValueError:
         messagebox.showerror("Error", "Inputs must be numbers")
@@ -104,7 +104,7 @@ def verifyInputs(values):
     return True  # If all checks are passed
 
 
-def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=None, cd=None, area=None):
+def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag_mode, m=None, rho=None, cd=None, area=None):
     """
     Checks if the values fall within the correct ranges
     :param u: initial velocity
@@ -121,8 +121,8 @@ def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=No
     :type z: int | float
     :param g: gravitational field strength
     :type g: int | float
-    :param drag: boolean value for if drag is included
-    :type drag: bool
+    :param drag_mode: boolean value for if drag is included
+    :type drag_mode: str
     :param m: mass
     :type m: int | float
     :param rho: air density
@@ -156,7 +156,7 @@ def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag=False, m=None, rho=No
         messagebox.showerror("Error", "Invalid input: g must fall within the range: 0 < g")
         return False
 
-    if drag:
+    if drag_mode != "no_drag":
         if m <= 0:
             messagebox.showerror("Error", "Invalid input: mass must fall within the range: 0 < m")
             return False
@@ -177,10 +177,29 @@ def close():
     sys.exit()
 
 
-def loadToolsFrame():
+def setupInterface(window):
     """
-    Loads the toolbar
+    Creates the GUI
+    :param window: the window
+    :type window: Tk
     """
+    def toggleDrag():
+        """
+        Toggles whether drag is included
+        """
+        if drag.get() == "no_drag":
+            for entry in (m_entry, rho_entry, cd_entry, a_entry):
+                entry.config(state="disabled")
+
+        else:
+            for entry in (m_entry, rho_entry, cd_entry, a_entry):
+                entry.config(state="normal")
+
+    window.title("Projectile Simulator")
+    window.attributes("-fullscreen", True)
+    window.config(bg=colours.get("accent"))
+
+    # Tools
     tools_frame = Frame(bg=colours["bg"])
     tools_frame.place(x=0, y=0, width=1920, height=40)
 
@@ -193,39 +212,7 @@ def loadToolsFrame():
     CustomButton(tools_frame, **style["tool button"], text="💾", command=openDatabaseWindow).pack(side=LEFT)
     CustomButton(tools_frame, **style["tool button"], text="⚙", command=openSettingsWindow).pack(side=LEFT)
 
-
-def loadInputFrame():
-    """
-    Loads the input frame
-    """
-    def toggleComparison():
-        """
-        Toggles whether drag is compared
-        """
-        if not drag:
-            toggleDrag()
-        if compare_drag.get():
-            drag_button.config(state="disabled")
-        else:
-            drag_button.config(state="normal")
-
-    def toggleDrag():
-        """
-        Toggles whether drag is included
-        """
-        global drag
-        if not drag:
-            drag_button.config(text="Drag", bg=colours["pos"])
-            for entry in (m_entry, rho_entry, cd_entry, a_entry):
-                entry.config(state="normal")
-
-        else:
-            drag_button.config(text="No Drag", bg=colours["neg"])
-            for entry in (m_entry, rho_entry, cd_entry, a_entry):
-                entry.config(state="disabled")
-
-        drag = not drag
-
+    # Input
     input_frame = Frame(root, bg=colours["bg"])
     input_frame.place(x=0, y=41, width=899, height=550)
 
@@ -256,29 +243,25 @@ def loadInputFrame():
     a_entry = Entry(input_frame, **style["entry"], width=9, textvariable=surface_area)
     a_entry.place(x=200, y=420)
 
-    drag_button = Button(input_frame, **style["pos button"], text="Drag", width=10, command=toggleDrag)
-    drag_button.place(x=20, y=480)
-
-    if not drag:
-        drag_button.config(bg=colours["neg"], text="No Drag")
+    if drag.get() == "no_drag":
         for entry in (m_entry, rho_entry, cd_entry, a_entry):
             entry.config(state="disabled")
 
-    CustomButton(input_frame, **style["button"], text="Run", width=10, command=run).place(x=160, y=480)
+    CustomButton(input_frame, **style["button"], text="Run", width=10, command=run).place(x=380, y=480)
 
     with open("definitions.txt", "r", encoding="UTF-8") as definition_file:  # Opens the file definitions.txt
         for x, line in enumerate(definition_file):  # Iterates over each line in the file
             HintLabel(input_frame, text=(line.strip()).replace(";", "\n"), bg=colours["but_bg"],
                       fg=colours["text"], width=2).place(x=330, y=40 * x + 20)
 
-    Checkbutton(input_frame, **style["checkbutton"], text="Compare Drag", variable=compare_drag,
-                command=toggleComparison).place(x=300, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="No Drag", variable=drag, value="no_drag",
+                command=toggleDrag).place(x=20, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="Drag", variable=drag, value="drag",
+                command=toggleDrag).place(x=140, y=480)
+    Radiobutton(input_frame, **style["radiobutton"], text="Compare", variable=drag, value="compare",
+                command=toggleDrag).place(x=260, y=480)
 
-
-def loadOutputFrame():
-    """
-    Loads the output frame
-    """
+    # Results
     output_frame = Frame(root, bg=colours["bg"])
     output_frame.place(x=0, y=592, width=899, height=488)
 
@@ -296,11 +279,7 @@ def loadOutputFrame():
     Label(output_frame, **style["label"], textvariable=max_height).place(x=200, y=220)
     Label(output_frame, **style["label"], textvariable=time).place(x=200, y=270)
 
-
-def loadGraphFrame():
-    """
-    Loads the graph frame
-    """
+    # Graph
     graph_frame.config(bg=colours["bg"]),
     graph_frame.place(x=900, y=41, width=1020, height=1039)
 
@@ -379,20 +358,17 @@ def loadFrames():
     Loads all the frames and the settings window with the new colours
     """
     root.config(bg=colours["accent"])
-    loadToolsFrame()
     loadSettingsFrame(settings_win)
-    loadInputFrame()
-    loadOutputFrame()
-    loadGraphFrame()
+    setupInterface(root)
 
 
 def loadTheme():
     """
-    Creates a dictionary storing the appearance options for different TKinter widgets using the chosen theme
-    :return: a dictionary storing the appearance options for different TKinter widgets
+    Creates a dictionary storing the appearance options for different tkinter widgets using the chosen theme
+    :return: a dictionary storing the appearance options for different tkinter widgets
     :rtype: dict[str, dict[str, str | int| tuple[str, int]]]
     """
-    style = {
+    widget_style = {
         "button": {
             "bg": colours["but_bg"],
             "fg": colours["text"],
@@ -455,10 +431,18 @@ def loadTheme():
             "borderwidth": 0,
             "activebackground": colours["but_bg"],
             "activeforeground": colours["text"]
+        },
+        "radiobutton": {
+            "bg": colours["bg"],
+            "fg": colours["text"],
+            "font": ("Arial", 14),
+            "activeforeground": colours["text"],
+            "activebackground": colours["bg"],
+            "selectcolor": colours["bg"]
         }
     }
 
-    return style
+    return widget_style
 
 
 def run():
@@ -474,9 +458,9 @@ def run():
         y0.get(),
         z0.get(),
         gravity.get(),
-        drag
+        drag.get()
     ]
-    if drag:
+    if drag.get() != "no_drag":
         values += [
             mass.get(),
             air_density.get(),
@@ -491,9 +475,9 @@ def run():
 
     dt = 0.01
     fig = plt.figure()
-    if not compare_drag.get():
+    if drag.get() != "compare":
         # Creates the objects using the values
-        if drag:
+        if drag.get() == "drag":
             proj = projectile.ProjectileDrag(*values, colour=colours["pos"])
         else:
             proj = projectile.ProjectileNoDrag(*values, colour=colours["neg"])
@@ -501,7 +485,7 @@ def run():
         while proj.pos[2] >= 0:
             proj.move(dt)
 
-        if drag:
+        if drag.get() == "drag":
             position.set(", ".join(str(round(x, 5)) for x in proj.pos))
             landing_time.set(str(round(proj.time, 5)))
         else:
@@ -511,7 +495,7 @@ def run():
         displacement.set(str(round(proj.calcDisplacement(), 5)))
         max_height.set(str(round(proj.max_h, 5)))
         time.set(str(round(proj.max_t, 5)))
-        loadOutputFrame()
+        # loadOutputFrame()
 
         plot = proj.displayPath(fig)  # Creates the graph
 
@@ -581,17 +565,17 @@ def openDatabaseWindow():
                 return
 
             record = selectPreset(record_name)
-            drag = bool(record[0])
+            drag.set(record[0])
 
             for value, variable in zip(record[1:8],
                                        [initial_velocity, elevation_angle, azimuth_angle, x0, y0, z0, gravity]):
                 variable.set(value=value)
 
-            if drag:
+            if drag.get() != "no_drag":
                 for value, variable in zip(record[8:], [air_density, mass, drag_coefficient, surface_area]):
                     variable.set(value=value)
 
-            loadInputFrame()
+            setupInterface(root)
 
         def previewRecord():
             """
@@ -602,7 +586,8 @@ def openDatabaseWindow():
                 return
 
             record = selectPreset(record_name)
-            record_drag = bool(record[0])
+            record_drag = record[0]
+            drag_label.config(text=record_drag)
             v_label.config(text=record[1])
             ele_label.config(text=record[2])
             azi_label.config(text=record[3])
@@ -611,14 +596,12 @@ def openDatabaseWindow():
             z_label.config(text=record[6])
             g_label.config(text=record[7])
 
-            if record_drag:
-                drag_label.config(text="True")
+            if record_drag != "no_drag":
                 m_label.config(text=record[9])
                 rho_label.config(text=record[8])
                 cd_label.config(text=record[10])
                 a_label.config(text=record[11])
             else:
-                drag_label.config(text="False")
                 m_label.config(text="")
                 rho_label.config(text="")
                 cd_label.config(text="")
@@ -713,9 +696,9 @@ def openDatabaseWindow():
                 y0.get(),
                 z0.get(),
                 gravity.get(),
-                drag
+                drag.get()
             ]
-            if drag:
+            if drag.get() != "no_drag":
                 values += [
                     air_density.get(),
                     mass.get(),
@@ -743,9 +726,9 @@ def openDatabaseWindow():
             mid = duplicateCheck("MID", "Motion", "velocity,ele_angle,azi_angle,x,y,z", motion_record)
 
             # Checks if the preset is unique
-            repeats = selectRecord("name", "Presets", "EID,PID,MID", [eid, pid, mid])
+            repeats = selectRecord("name", "Presets", "drag,EID,PID,MID", [drag.get(), eid, pid, mid])
             if not repeats:  # If the preset is unique
-                insertRecord("Presets", "name,drag,EID,PID,MID", [name, drag, eid, pid, mid])
+                insertRecord("Presets", "name,drag,EID,PID,MID", [name, drag.get(), eid, pid, mid])
                 messagebox.showinfo("Preset Saved", "Preset successfully saved")
             else:  # If it already exists
                 messagebox.showerror("Error", f"Invalid value/s: record already exists under '{repeats[0][0]}'")
@@ -884,7 +867,7 @@ def setupDatabase(database):
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS Presets
     (name               TEXT        PRIMARY KEY,
-    drag                INTEGER     NOT NULL,
+    drag                TEXT        NOT NULL,
     EID                 INTEGER     NOT NULL,
     PID                 INTEGER     NOT NULL,
     MID                 INTEGER     NOT NULL,
@@ -904,13 +887,11 @@ if __name__ == "__main__":
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
     root = Tk()
-    root.title("Projectile Simulator")
-    root.attributes("-fullscreen", True)
 
     with open("config.json", "r") as settings_file:  # Opens file config.json
-        data = json.load(settings_file)  # Loads the data
-    theme = data["theme"]  # Last used theme
-    colourblind = data["colourblind"]  # Last used colourblind setting
+        settings = json.load(settings_file)  # Loads the data
+    last_theme = settings["theme"]  # Last used theme
+    last_colourblind = settings["colourblind"]  # Last used colourblind setting
 
     colourblind_schemes = {
         True: {"neg": "#FF8700", "pos": "#1E78E5"},
@@ -919,18 +900,16 @@ if __name__ == "__main__":
 
     with open("themes.json", "r") as themes_file:  # Opens file themes.json
         themes = json.load(themes_file)  # Loads all themes to dictionary
-    colours = colourblind_schemes[colourblind]  # Stores the current theme
-    colours.update(themes[theme])
-    current_theme = StringVar(value=theme)  # Variable to store the current theme
-    colourblind_mode = BooleanVar(value=colourblind)  # Boolean value for if colourblind mode is active
+    colours = colourblind_schemes[last_colourblind]  # Stores the current theme
+    colours.update(themes[last_theme])
+    current_theme = StringVar(value=last_theme)  # Variable to store the current theme
+    colourblind_mode = BooleanVar(value=last_colourblind)  # Boolean value for if colourblind mode is active
     style = loadTheme()  # Stores the style options for different widgets
-
-    root.config(bg=colours["accent"])
 
     graph_frame = Frame(root)
 
-    drag = False
     # Inputs
+    drag = StringVar(value="no_drag")  # Options: "no_drag", "drag", "compare"
     initial_velocity = StringVar()
     elevation_angle = StringVar()
     azimuth_angle = StringVar()
@@ -942,7 +921,6 @@ if __name__ == "__main__":
     air_density = StringVar()
     drag_coefficient = StringVar()
     surface_area = StringVar()
-    compare_drag = BooleanVar(value=False)  # Boolean value whether both graphs are shown
 
     # Results
     position = StringVar(value="__________, __________, __________")
@@ -952,9 +930,6 @@ if __name__ == "__main__":
     max_height = StringVar(value="__________")
     time = StringVar(value="__________")
 
-    loadToolsFrame()  # Loads the tool frame
-    loadInputFrame()  # Loads the input frame
-    loadOutputFrame()  # Loads the results frame
-    loadGraphFrame()  # Loads the graph frame
+    setupInterface(root)  # Loads the GUI
 
     root.mainloop()  # Keeps the window open
