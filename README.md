@@ -1,4 +1,8 @@
 ﻿# A-Level-Project
+[![GitHub Release](https://img.shields.io/github/release/RoryPoulter/A-Level-Project.svg?style=flat)]()
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![GitHub last commit](https://img.shields.io/github/last-commit/RoryPoulter/A-Level-Project.svg?style=flat)]()
+
 Python program to simulate projectile motion in 3 dimensions.\
 Developed for my Computer Science A-Level project.
 
