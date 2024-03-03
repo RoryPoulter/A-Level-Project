@@ -19,8 +19,8 @@ Once the libraries have been installed, run the file `src/main.py`
 
 ## Usage
 ### Settings
-Resolution: 1920x1080\
-Text scaling: 100%
+* Resolution: 1920x1080\
+* Text scaling: 100%
 ### Simulation
 The values can be input into text boxes.
 
@@ -73,9 +73,11 @@ to manage the presets.
 
 ## Roadmap
 Written in [Python 3.10](https://www.python.org/downloads/).\
-Future updates will include:
-* Results for comparing projectiles
+#### Updates currently in development:
 * Code overhaul to make future development easier
+
+#### Future updates:
+* Results for comparing projectiles
 * Theme editor to create and save custom themes
 * Full error diagnosis for input validation
 * Button to reset graph

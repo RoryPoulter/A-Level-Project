@@ -1,12 +1,4 @@
-/notes.txt
 /changelog.py
-/presets.db
-/v3/
-/Logs/
-/Tests/
-/v2/
-/v1/
 /src/presets.db
 /.idea/
 *__pycache__*
-/v1.0/
