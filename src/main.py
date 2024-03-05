@@ -3,13 +3,13 @@
 # Last edited: 21/02/24
 from tkinter import *  # GUI
 from tkinter import messagebox  # Error messages
+import ctypes
 import json  # Themes
-import projectile  # Projectile calculations
-import sqlite3  # Database
+import sys
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embedding the graph
 import matplotlib.pyplot as plt  # Graph
-import ctypes
-import sys
+import projectile  # Projectile calculations
+import database
 
 
 class HintLabel(Label):
@@ -78,37 +78,38 @@ def verifyInputs(values):
     """
     Checks if the inputs are valid
     :param values: list of all the inputs
-    :type values: list[str]
+    :type values: dict[str, str]
     :return: whether values are valid; True for yes, False for no
     :rtype: bool
     """
     # Checks for empty values
-    if "" in values:
+    if "" in values.values():
         messagebox.showerror("Error", "Empty fields")
         return False
 
     # Checks for string inputs
     try:
-        values[0:7] = list(map(float, values[0:7]))
-        if drag.get() != "no_drag":
-            values[8:] = list(map(float, values[8:]))
+        values |= dict(map(lambda kv: (kv[0], float(kv[1])), values.items()))
     except ValueError:
         messagebox.showerror("Error", "Inputs must be numbers")
         return False
 
     # Passes the values into the function verifyRanges to check if values are within range
-    valid = verifyRanges(*values)
+    valid = verifyRanges(drag.get(), **values)
     if not valid:
         return False
 
     return True  # If all checks are passed
 
 
-def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag_mode, m=None, rho=None, cd=None, area=None):
+def verifyRanges(drag_mode, velocity, ele_angle, azi_angle, x, y, z, gravity,
+                 mass=None, air_density=None, drag_coefficient=None, area=None):
     """
     Checks if the values fall within the correct ranges
-    :param u: initial velocity
-    :type u: int | float
+    :param drag_mode: value for if drag is included, excluded, or both
+    :type drag_mode: str
+    :param velocity: initial velocity
+    :type velocity: int | float
     :param ele_angle: elevation angle
     :type ele_angle: int | float
     :param azi_angle: azimuth angle
@@ -119,22 +120,20 @@ def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag_mode, m=None, rho=Non
     :type y: int | float
     :param z: initial z coordinate
     :type z: int | float
-    :param g: gravitational field strength
-    :type g: int | float
-    :param drag_mode: boolean value for if drag is included
-    :type drag_mode: str
-    :param m: mass
-    :type m: int | float
-    :param rho: air density
-    :type rho: int | float
-    :param cd: drag coefficient
-    :type cd: int | float
+    :param gravity: gravitational field strength
+    :type gravity: int | float
+    :param mass: mass
+    :type mass: int | float
+    :param air_density: air density
+    :type air_density: int | float
+    :param drag_coefficient: drag coefficient
+    :type drag_coefficient: int | float
     :param area: surface area
     :type area: int | float
     :return: True if all values are valid, False if not
     :rtype: bool
     """
-    if u <= 0:
+    if velocity <= 0:
         messagebox.showerror("Error", "Invalid input: velocity must fall within the range: 0 < u")
         return False
     if ele_angle < 0 or ele_angle > 90:
@@ -152,18 +151,18 @@ def verifyRanges(u, ele_angle, azi_angle, x, y, z, g, drag_mode, m=None, rho=Non
     if z < 0:
         messagebox.showerror("Error", "Invalid input: z must fall within the range: 0 ≤ z")
         return False
-    if g <= 0:
+    if gravity <= 0:
         messagebox.showerror("Error", "Invalid input: g must fall within the range: 0 < g")
         return False
 
     if drag_mode != "no_drag":
-        if m <= 0:
+        if mass <= 0:
             messagebox.showerror("Error", "Invalid input: mass must fall within the range: 0 < m")
             return False
-        if rho <= 0:
+        if air_density <= 0:
             messagebox.showerror("Error", "Invalid input: air density must fall within the range: 0 < ρ")
             return False
-        if cd <= 0 or cd > 1:
+        if drag_coefficient <= 0 or drag_coefficient > 1:
             messagebox.showerror("Error", "Invalid input: drag coefficient must fall within the range: 0 < cd ≤ 1")
             return False
         if area <= 0:
@@ -450,37 +449,35 @@ def run():
     Runs the simulation using the provided inputs
     """
     # Stores all inputs as a list
-    values = [
-        initial_velocity.get(),
-        elevation_angle.get(),
-        azimuth_angle.get(),
-        x0.get(),
-        y0.get(),
-        z0.get(),
-        gravity.get(),
-        drag.get()
-    ]
+    values = {
+        "velocity": initial_velocity.get(),
+        "ele_angle": elevation_angle.get(),
+        "azi_angle": azimuth_angle.get(),
+        "x": x0.get(),
+        "y": y0.get(),
+        "z": z0.get(),
+        "gravity": gravity.get()
+    }
     if drag.get() != "no_drag":
-        values += [
-            mass.get(),
-            air_density.get(),
-            drag_coefficient.get(),
-            surface_area.get()
-        ]
+        values |= {
+            "mass": mass.get(),
+            "air_density": air_density.get(),
+            "drag_coefficient": drag_coefficient.get(),
+            "area": surface_area.get()
+        }
 
     valid = verifyInputs(values)  # Checks if the inputs are valid
     if not valid:
         return
-    values.pop(7)  # Removes the value for drag
 
     dt = 0.01
     fig = plt.figure()
     if drag.get() != "compare":
         # Creates the objects using the values
         if drag.get() == "drag":
-            proj = projectile.ProjectileDrag(*values, colour=colours["pos"])
+            proj = projectile.ProjectileDrag(**values, colour=colours["pos"])
         else:
-            proj = projectile.ProjectileNoDrag(*values, colour=colours["neg"])
+            proj = projectile.ProjectileNoDrag(**values, colour=colours["neg"])
         # Updates the position until it is on the ground
         while proj.pos[2] >= 0:
             proj.move(dt)
@@ -500,8 +497,10 @@ def run():
         plot = proj.displayPath(fig)  # Creates the graph
 
     else:
-        proj_drag = projectile.ProjectileDrag(*values, colour=colours["pos"])  # Projectile with drag
-        proj_no_drag = projectile.ProjectileNoDrag(*values[:7], colour=colours["neg"])  # Projectile without drag
+        proj_drag = projectile.ProjectileDrag(**values, colour=colours["pos"])  # Projectile with drag
+        for key in ("mass", "air_density", "drag_coefficient", "area"):
+            values.pop(key)
+        proj_no_drag = projectile.ProjectileNoDrag(**values, colour=colours["neg"])  # Projectile without drag
 
         for proj in (proj_drag, proj_no_drag):  # Iterates over each projectile
             while proj.pos[2] >= 0:  # Iterates while the projectile is above the ground
@@ -550,8 +549,9 @@ def openDatabaseWindow():
             record_name = chosen_record.get()
             if record_name == "Select Preset" or record_name == "No Presets":
                 return
-            c.execute("DELETE FROM Presets WHERE name=?", [record_name])  # Deletes the chosen preset
-            db.commit()  # Commits the changes
+            db.deleteRecord("Presets", "name", record_name)
+            # c.execute("DELETE FROM Presets WHERE name=?", [record_name])  # Deletes the chosen preset
+            # db.commit()  # Commits the changes
             records.remove(record_name)
             messagebox.showinfo("Preset Deleted", "Preset successfully deleted")
 
@@ -564,7 +564,7 @@ def openDatabaseWindow():
             if record_name == "Select Preset" or record_name == "No Presets":
                 return
 
-            record = selectPreset(record_name)
+            record = db.selectPreset(record_name)
             drag.set(record[0])
 
             for value, variable in zip(record[1:8],
@@ -585,7 +585,7 @@ def openDatabaseWindow():
             if record_name == "Select Preset":
                 return
 
-            record = selectPreset(record_name)
+            record = db.selectPreset(record_name)
             record_drag = record[0]
             drag_label.config(text=record_drag)
             v_label.config(text=record[1])
@@ -613,8 +613,9 @@ def openDatabaseWindow():
               font=("Calibri", 20)).place(relx=0.5, y=50, anchor=CENTER)
 
         # Fetches all records to be displayed in dropdown menu
-        c.execute("SELECT name, drag FROM Presets")
-        records = list(dict(c.fetchall()).keys())
+        # c.execute("SELECT name, drag FROM Presets")
+        # records = list(dict(c.fetchall()).keys())
+        records = db.getPresets()
 
         preview_button = CustomButton(db_view_frame, **style["button"], text="Preview", command=previewRecord,
                                       disabledforeground=colours["text"])
@@ -678,7 +679,7 @@ def openDatabaseWindow():
             Saves a new preset to the database using values from the main window
             """
             name = new_preset.get()
-            records = selectRecord("name", "Presets", "name", [name])  # Selects all records with the same name
+            records = db.selectRecord("name", "Presets", {"name": name})  # Selects all records with the same name
             if records:  # If the name is not unique
                 messagebox.showerror("Error", "Invalid input: name already in use")
                 return
@@ -688,47 +689,59 @@ def openDatabaseWindow():
             elif name == "":  # If the field is empty
                 messagebox.showerror("Error", "Invalid input: name field empty")
                 return
-            values = [
-                initial_velocity.get(),
-                elevation_angle.get(),
-                azimuth_angle.get(),
-                x0.get(),
-                y0.get(),
-                z0.get(),
-                gravity.get(),
-                drag.get()
-            ]
+            motion_record = {
+                "velocity": initial_velocity.get(),
+                "ele_angle": elevation_angle.get(),
+                "azi_angle": azimuth_angle.get(),
+                "x": x0.get(),
+                "y": y0.get(),
+                "z": z0.get(),
+            }
+            environment_record = {
+                "gravity": gravity.get()
+            }
             if drag.get() != "no_drag":
-                values += [
-                    air_density.get(),
-                    mass.get(),
-                    drag_coefficient.get(),
-                    surface_area.get()
-                ]
+                environment_record |= {
+                    "air_density": air_density.get()
+                }
+                projectile_record = {
+                    "mass": mass.get(),
+                    "drag_coefficient": drag_coefficient.get(),
+                    "area": surface_area.get()
+                }
             else:
-                values += [None] * 4  # Used as NULL values in database
+                environment_record |= {
+                    "air_density": -1
+                }
+                projectile_record = {
+                    "mass": -1,
+                    "drag_coefficient": -1,
+                    "area": -1
+                }
+            values = motion_record | environment_record | projectile_record
 
             valid = verifyInputs(values)  # Checks if the inputs are valid
             if not valid:
                 return
-
-            motion_record = values[0:6]
-            environment_record = values[6:9:2]
-            projectile_record = values[9:]
+            if drag.get() == "no_drag":
+                environment_record["air_density"] = None
+                projectile_record["mass"] = None
+                projectile_record["drag_coefficient"] = None
+                projectile_record["area"] = None
 
             # Finds environment id
-            eid = duplicateCheck("EID", "Environments", "gravity,air_density", environment_record)
+            eid = db.duplicateCheck("EID", "Environments", environment_record)
 
             # Finds projectile id
-            pid = duplicateCheck("PID", "Projectiles", "mass,drag_coefficient,area", projectile_record)
+            pid = db.duplicateCheck("PID", "Projectiles", projectile_record)
 
             # Finds motion id
-            mid = duplicateCheck("MID", "Motion", "velocity,ele_angle,azi_angle,x,y,z", motion_record)
+            mid = db.duplicateCheck("MID", "Motion", motion_record)
 
             # Checks if the preset is unique
-            repeats = selectRecord("name", "Presets", "drag,EID,PID,MID", [drag.get(), eid, pid, mid])
+            repeats = db.selectRecord("name", "Presets", {"drag": drag.get(), "EID": eid, "PID": pid, "MID": mid})
             if not repeats:  # If the preset is unique
-                insertRecord("Presets", "name,drag,EID,PID,MID", [name, drag.get(), eid, pid, mid])
+                db.insertRecord("Presets", {"name": name, "drag": drag.get(), "EID": eid, "PID": pid, "MID": mid})
                 messagebox.showinfo("Preset Saved", "Preset successfully saved")
             else:  # If it already exists
                 messagebox.showerror("Error", f"Invalid value/s: record already exists under '{repeats[0][0]}'")
@@ -755,134 +768,8 @@ def openDatabaseWindow():
     loadDatabaseMenuFrame()
 
 
-# Database functions
-def insertRecord(table, fields, values):
-    """
-    Runs an SQL query to insert values into a given table
-    :param table: The table which the record will be inserted into
-    :type table: str
-    :param fields: The names of the fields in the table
-    :type fields: str
-    :param values: The values which will be inserted into the record
-    :type values: list
-    """
-    q_marks = "?," * len(fields.split(","))  # Creates a string e.g. "?,?,?" with as many ?s as fields
-    values = tuple(values)  # Casts list as tuple
-    c.execute(f"INSERT INTO {table} ({fields}) VALUES ({q_marks[:~0]})", values)  # Inserts the record to the database
-    db.commit()  # Commits the changes
-
-
-def selectRecord(field, table, fields, values):
-    """
-    Runs an SQL select query and returns the records
-    :param field: The field which the selected values belong to
-    :type field: str
-    :param table: The table which the record will be inserted into
-    :type table: str
-    :param fields: The names of the fields in the table
-    :type fields: str
-    :param values: The values which will be inserted into the record
-    :type values: list
-    :return: The records which match the chosen values
-    :rtype: list
-    """
-    q_marks = "?," * len(fields.split(","))  # Creates a string e.g. "?,?,?" with as many ?s as fields
-    c.execute(f"SELECT {field} FROM {table} WHERE ({fields}) IS ({q_marks[:~0]})", values)  # Selects the record
-    return c.fetchall()
-
-
-def duplicateCheck(field, table, fields, values):
-    """
-    Checks if the record exists; if not the record is inserted; returns the primary key
-    :param field: The field which the selected values belong to
-    :type field: str
-    :param table: The table which the record will be inserted into
-    :type table: str
-    :param fields: The names of the fields in the table
-    :type fields: str
-    :param values: The values which will be inserted into the record
-    :type values: list
-    :return: the id
-    :rtype: int
-    """
-    primary_key = selectRecord(field, table, fields, values)  # Selects the primary key from the record
-    if not primary_key:  # If the record does not exist
-        insertRecord(table, fields, values)  # Inserts the record
-        primary_key = selectRecord(field, table, fields, values)[0][0]  # Fetches the primary key of the new record
-    else:  # If the record exists
-        primary_key = primary_key[0][0]  # Isolates the primary key from the record
-    return primary_key
-
-
-def selectPreset(name):
-    """
-    Selects the preset from the database
-    :param name: The name (primary key) of the preset
-    :type name: str
-    :return: The values from the preset
-    :rtype: tuple
-    """
-    # Selects all the values from the preset
-    c.execute("""SELECT Presets.drag, 
-    Motion.velocity, Motion.ele_angle, Motion.azi_angle, Motion.x, Motion.y, Motion.z, 
-    Environments.gravity, Environments.air_density,
-    Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
-    FROM Motion, Environments, Presets, Projectiles 
-    WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
-    Presets.name=?""",
-              [name])
-    return c.fetchall()[0]
-
-
-def setupDatabase(database):
-    """
-    Creates the database and all the tables
-    :param database: The database connection
-    :type database: sqlite3.Connection
-    :return: The cursor for interacting with the database
-    :rtype: sqlite3.Cursor
-    """
-    database.execute("PRAGMA foreign_keys = ON")  # Enables foreign keys
-    cursor = database.cursor()
-    # Creates the tables
-    cursor.execute("""CREATE TABLE IF NOT EXISTS Environments
-    (EID                INTEGER     PRIMARY KEY,
-    gravity             REAL        NOT NULL,
-    air_density         REAL)""")
-
-    cursor.execute("""CREATE TABLE IF NOT EXISTS Projectiles
-    (PID                INTEGER     PRIMARY KEY,
-    mass                REAL,
-    drag_coefficient    REAL,
-    area                REAL)""")
-
-    cursor.execute("""CREATE TABLE IF NOT EXISTS Motion
-    (MID                INTEGER     PRIMARY KEY,
-    velocity            REAL        NOT NULL,
-    ele_angle           REAL        NOT NULL,
-    azi_angle           REAL        NOT NULL,
-    x                   REAL        NOT NULL,
-    y                   REAL        NOT NULL,
-    z                   REAL        NOT NULL)""")
-
-    cursor.execute("""CREATE TABLE IF NOT EXISTS Presets
-    (name               TEXT        PRIMARY KEY,
-    drag                TEXT        NOT NULL,
-    EID                 INTEGER     NOT NULL,
-    PID                 INTEGER     NOT NULL,
-    MID                 INTEGER     NOT NULL,
-    FOREIGN KEY (EID) REFERENCES Environments (EID),
-    FOREIGN KEY (PID) REFERENCES Projectiles (PID),
-    FOREIGN KEY (MID) REFERENCES Motion (MID))""")
-    database.commit()  # Saves any changes
-
-    return cursor
-
-
 if __name__ == "__main__":
-    # Database
-    db = sqlite3.connect("presets.db")  # Connects to file presets.db
-    c = setupDatabase(db)  # Creates the cursor
+    db = database.Database("presets.db")
 
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
 

@@ -154,7 +154,8 @@ class ProjectileNoDrag(Projectile):
 
 
 class ProjectileDrag(Projectile):
-    def __init__(self, velocity, ele_angle, azi_angle, x, y, z, gravity, mass, rho, cd, area, **kwargs):
+    def __init__(self, velocity, ele_angle, azi_angle, x, y, z, gravity, mass, air_density, drag_coefficient, area,
+                 **kwargs):
         """
         Creates an instance of the object
         :param velocity: The magnitude of the initial velocity
@@ -173,18 +174,18 @@ class ProjectileDrag(Projectile):
         :type gravity: float | int
         :param mass: The mass of the projectile
         :type mass: float | int
-        :param rho: The air density of the medium
-        :type rho: float | int
-        :param cd: The drag coefficient of the projectile
-        :type cd: float | int
+        :param air_density: The air density of the medium
+        :type air_density: float | int
+        :param drag_coefficient: The drag coefficient of the projectile
+        :type drag_coefficient: float | int
         :param area: The surface area of the projectile
         :type area: float | int
         :param kwargs: Appearance options for the scatter graph
         """
         super().__init__(velocity, ele_angle, azi_angle, x, y, z, gravity, **kwargs)
         self.m = mass  # Mass
-        self.rho = rho  # Air density
-        self.cd = cd  # Drag coefficient
+        self.rho = air_density  # Air density
+        self.cd = drag_coefficient  # Drag coefficient
         self.area = area  # Surface area
 
         self.p = self.m * self.v  # Momentum of the projectile
