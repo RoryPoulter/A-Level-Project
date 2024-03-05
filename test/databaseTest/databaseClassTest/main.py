@@ -1,8 +1,13 @@
 import sqlite3
+from os import PathLike
 
 
 class Database:
     def __init__(self, path):
+        """
+        :param path: Path to database file
+        :type path: str | bytes | PathLike[str] | PathLike[bytes]
+        """
         self.db = sqlite3.connect(path)
         self.db.execute("PRAGMA foreign_keys = ON")
         self.c = self.db.cursor()
@@ -44,7 +49,7 @@ class Database:
         :param table: The name of the table
         :type table: str
         :param data: The data to be inserted into the table
-        :type data: dict[str]
+        :type data: dict[str, Any]
         :return: None
         """
         fields = list(data.keys())
@@ -61,7 +66,7 @@ class Database:
         :param table: The table in the database
         :type table: str
         :param data: The data of the record
-        :type data: dict[str]
+        :type data: dict[str, Any]
         :return: The value in the field
         :rtype: list
         """
@@ -79,7 +84,7 @@ class Database:
         :param table: The name of the table
         :type table: str
         :param data: The data in the record
-        :type data: dict[str]
+        :type data: dict[str, Any]
         :return: The primary key of the record
         """
         primary_key = self.selectRecord(primary_key, table, data)  # Selects the primary key from the record
@@ -108,19 +113,33 @@ class Database:
         Presets.name=?""", [name])
         return self.c.fetchall()[0]
 
-    def deleteRecord(self, table, primary_key, field):
+    def deleteRecord(self, table, field, primary_key):
         """
         Deletes a record from a table.
         :param table: The table which the record is being deleted from
         :type table: str
-        :param primary_key: The primary key of the record to be deleted
         :param field: The name of the primary field
+        :type field: str
+        :param primary_key: The primary key of the record to be deleted
         """
         self.c.execute(f"DELETE FROM {table} WHERE ({field}) IS ({primary_key})")
         self.db.commit()
 
+    def getPresets(self):
+        """
+        Selects all the preset names
+        :return: The preset names
+        :rtype: list[str]
+        """
+        self.c.execute("SELECT name FROM Presets")
+        records = self.c.fetchall()
+        preset_names = list(zip(*records))[0]
+        return list(preset_names)
+
 
 if __name__ == "__main__":
     db = Database("presets.db")
-    print(db.selectPreset("test_no_drag"))
     print(db.selectRecord("*", "Presets", {"EID": 1}))
+    print(names := db.getPresets())
+    for name in names:
+        print(f"{name}: {db.selectPreset(name)}")
