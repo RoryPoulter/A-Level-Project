@@ -73,33 +73,34 @@ class Database:
         fields = list(data.keys())
         values = list(data.values())
         q_marks = ", ".join(["?"] * len(data))
-        self.c.execute(f"SELECT {field} FROM {table} WHERE ({q_marks}) IS ({str(*values)})", values)
+        self.c.execute(f"SELECT {field} FROM {table} WHERE ({", ".join(fields)}) IS ({q_marks})", values)
         return self.c.fetchall()
 
-    def duplicateCheck(self, primary_key, table, data):
+    def duplicateCheck(self, primary_field, table, data):
         """
         Checks for records in the table. If the record does not exist, the values are inserted into the table. Returns
         the primary key of the record with the specified values
-        :param primary_key: The primary key of the table
+        :param primary_field: The primary key of the table
+        :type primary_field: str
         :param table: The name of the table
         :type table: str
         :param data: The data in the record
         :type data: dict[str, Any]
         :return: The primary key of the record
         """
-        primary_key = self.selectRecord(primary_key, table, data)  # Selects the primary key from the record
+        primary_key = self.selectRecord(primary_field, table, data)  # Selects the primary key from the record
         if not primary_key:  # If the record does not exist
             self.insertRecord(table, data)  # Inserts the record
-            primary_key = self.selectRecord(primary_key, table, data)[0][0]  # Fetches the primary key of the new record
+            primary_key = self.selectRecord(primary_field, table, data)[0][0]  # Fetches the primary key of the record
         else:  # If the record exists
             primary_key = primary_key[0][0]  # Isolates the primary key from the record
         return primary_key
 
-    def selectPreset(self, name):
+    def selectPreset(self, preset_name):
         """
         Fetches all the values in the preset from the different tables
-        :param name: The name of the preset
-        :type name: str
+        :param preset_name: The name of the preset
+        :type preset_name: str
         :return: The values in the preset
         :rtype: tuple[str | float | None]
         """
@@ -110,7 +111,7 @@ class Database:
         Projectiles.mass, Projectiles.drag_coefficient, Projectiles.area
         FROM Motion, Environments, Presets, Projectiles 
         WHERE Presets.EID=Environments.EID AND Presets.PID=Projectiles.PID AND Presets.MID=Motion.MID AND 
-        Presets.name=?""", [name])
+        Presets.name=?""", [preset_name])
         return self.c.fetchall()[0]
 
     def deleteRecord(self, table, field, primary_key):
@@ -140,6 +141,7 @@ class Database:
 if __name__ == "__main__":
     db = Database("presets.db")
     print(db.selectRecord("*", "Presets", {"EID": 1}))
+    print(db.duplicateCheck("EID", "Environments", {"gravity": 9.81, "air_density": 1.2}))
     print(names := db.getPresets())
     for name in names:
         print(f"{name}: {db.selectPreset(name)}")
